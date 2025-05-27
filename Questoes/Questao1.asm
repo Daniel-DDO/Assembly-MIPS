@@ -20,7 +20,7 @@
     textStrcmp: .asciiz "STRCMP"
     textStrncmp: .asciiz "STRNCMP"
     textStrcat: .asciiz "STRCAT"
-
+    entradaInv: .asciiz "\nValor inválido. Tente novamente."
     userDigitou: .space 200
 
     encerrando: .asciiz "\nEncerrando...\n"
@@ -87,6 +87,10 @@ execucaoPrograma:
     beq $t0, $t1, strcat        # if ($t0 == 5) -> executa strcat
     li $t1, 6
     beq $t0, $t1, encerrarPr    # if ($t0 == 6) -> encerrar programa
+    
+    la $a0, entradaInv          #$a0 = entradaInv
+    printString                 #executa macro
+
     j execucaoPrograma
 
 
@@ -125,3 +129,4 @@ encerrarPr:
     la $a0, encerrando          #$a0 = encerrando
     printString                 #executa macro
     encerrar
+    
