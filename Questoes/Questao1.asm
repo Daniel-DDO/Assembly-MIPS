@@ -14,7 +14,7 @@
     bibliotecaStringH: .asciiz "String.h - Assembly MIPS"
 
 
-.macro quebra-linha
+.macro quebra_linha
     la $a0, barraN      #$a0 = barraN
     li $v0, 4           #chama a impressão
     syscall             #executa a linha anterior
