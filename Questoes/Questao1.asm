@@ -15,6 +15,12 @@
     programa: .asciiz "\nEscolha uma opção:\n1 - STRCPY\n2 - MEMCPY\n3 - STRCMP\n4 - STRNCMP\n5 - STRCAT\n6 - Encerrar\n"
     opcaoEscolhida: .word 0
 
+    textStrcpy: .asciiz "STRCPY"
+    textMemcpy: .asciiz "MEMCPY"
+    textStrcmp: .asciiz "STRCMP"
+    textStrncmp: .asciiz "STRNCMP"
+    textStrcat: .asciiz "STRCAT"
+
     userDigitou: .space 200
 
     encerrando: .asciiz "\nEncerrando...\n"
@@ -61,12 +67,13 @@ main:
     printString                 #executa macro
     quebra_linha		        #executa macro
 
+execucaoPrograma:
     la $a0, programa            #$a0 = programa
     printString                 #executa macro
 
-    readInt
-    add $t0, $v0, $0
-    sw $t0, opcaoEscolhida
+    readInt                     #executa macro
+    add $t0, $v0, $0            #$t0 = $v0 + 0
+    sw $t0, opcaoEscolhida      #opcaoEscolhida = $t0
     
     li $t1, 1
     beq $t0, $t1, strcpy        # if ($t0 == 1) -> executa strcpy
@@ -80,6 +87,8 @@ main:
     beq $t0, $t1, strcat        # if ($t0 == 5) -> executa strcat
     li $t1, 6
     beq $t0, $t1, encerrarPr    # if ($t0 == 6) -> encerrar programa
+    j execucaoPrograma
+
 
     #Depuração e testes
     lw $a0, opcaoEscolhida
@@ -88,21 +97,31 @@ main:
     encerrar
 
 strcpy:
+    la $a0, textStrcpy          #$a0 = textStrcpy
+    printString                 #executa macro
     encerrar
 
 memcpy:
+    la $a0, textMemcpy          #$a0 = textMemcpy
+    printString                 #executa macro
     encerrar
 
 strcmp:
+    la $a0, textStrcmp          #$a0 = textStrcmp
+    printString                 #executa macro
     encerrar
 
 strncmp:
+    la $a0, textStrncmp         #$a0 = textStrncmp
+    printString                 #executa macro
     encerrar
 
 strcat:
+    la $a0, textStrcat          #$a0 = textStrcat
+    printString                 #executa mmacro
     encerrar
 
 encerrarPr:
-    la $a0, encerrando
-    printString
+    la $a0, encerrando          #$a0 = encerrando
+    printString                 #executa macro
     encerrar
