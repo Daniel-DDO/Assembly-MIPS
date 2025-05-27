@@ -5,28 +5,42 @@
 # Daniel Dionísio de Oliveira
 # Gabriel Felipe Pontes da Silva Farias
 
-# Questão 1 - Alternativa A
+# Questão 1
 
 
 .data
     barraN: .asciiz "\n"
 
+    bibliotecaStringH: .asciiz "String.h - Assembly MIPS"
+
 
 .macro quebra-linha
-    la $a0, barraN  #carrega a variável barraN em $a0
-    li $v0, 4       #chama a impressão
-    syscall         #executa a linha anterior
+    la $a0, barraN      #$a0 = barraN
+    li $v0, 4           #chama a impressão
+    syscall             #executa a linha anterior
 .end_macro
 
 .macro encerrar
-    li $v0, 10      #chama o serviço para encerrar
-    syscall         #encerra o programa
+    li $v0, 10          #chama o serviço para encerrar
+    syscall             #encerra o programa
 .end_macro
+
+.macro printString
+    li $v0, 4           #imprime string que está em $a0
+    syscall             #executa
+.end_macro
+
+.macro printInt
+    li $v0, 1           #imprime int que está em $a0
+    syscall             #executa
+.end_macro
+
 
 .text
 .globl main
 main:
 
+    la $a0, bibliotecaStringH   #$a0 = bibliotecaStringH
+    printString                 #executa macro
 
-
-
+    encerrar
