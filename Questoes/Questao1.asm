@@ -12,7 +12,12 @@
     barraN: .asciiz "\n"
 
     bibliotecaStringH: .asciiz "String.h - Assembly MIPS"
+    programa: .asciiz "\nEscolha uma opção:\n1 - STRCPY\n2 - MEMCPY\n3 - STRCMP\n4 - STRNCMP\n5 - STRCAT\n"
+    opcaoEscolhida: .word 0
 
+    userDigitou: .space 200
+
+#Macros usuais
 
 .macro quebra_linha
     la $a0, barraN      #$a0 = barraN
@@ -35,6 +40,16 @@
     syscall             #executa
 .end_macro
 
+.macro readString
+    li $v0, 8           #lê string, salva texto em $a0 e tamanho em $a1
+    syscall             #executa
+.end_macro
+
+.macro readInt
+    li $v0, 5           #lê int, salva em $v0
+    syscall             #executa
+.end_macro
+
 
 .text
 .globl main
@@ -42,5 +57,16 @@ main:
 
     la $a0, bibliotecaStringH   #$a0 = bibliotecaStringH
     printString                 #executa macro
+    quebra_linha		        #executa macro
+
+    la $a0, programa            #$a0 = programa
+    printString                 #executa macro
+
+    readInt
+    add $t0, $v0, $0
+    sw $t0, opcaoEscolhida
+    
+    lw $a0, opcaoEscolhida
+    printInt
 
     encerrar
