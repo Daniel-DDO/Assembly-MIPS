@@ -12,10 +12,12 @@
     barraN: .asciiz "\n"
 
     bibliotecaStringH: .asciiz "String.h - Assembly MIPS"
-    programa: .asciiz "\nEscolha uma opção:\n1 - STRCPY\n2 - MEMCPY\n3 - STRCMP\n4 - STRNCMP\n5 - STRCAT\n"
+    programa: .asciiz "\nEscolha uma opção:\n1 - STRCPY\n2 - MEMCPY\n3 - STRCMP\n4 - STRNCMP\n5 - STRCAT\n6 - Encerrar\n"
     opcaoEscolhida: .word 0
 
     userDigitou: .space 200
+
+    encerrando: .asciiz "\nEncerrando...\n"
 
 #Macros usuais
 
@@ -66,7 +68,41 @@ main:
     add $t0, $v0, $0
     sw $t0, opcaoEscolhida
     
+    li $t1, 1
+    beq $t0, $t1, strcpy        # if ($t0 == 1) -> executa strcpy
+    li $t1, 2
+    beq $t0, $t1, memcpy        # if ($t0 == 2) -> executa memcpy
+    li $t1, 3
+    beq $t0, $t1, strcmp        # if ($t0 == 3) -> executa strcmp
+    li $t1, 4
+    beq $t0, $t1, strncmp       # if ($t0 == 4) -> executa strncmp
+    li $t1, 5
+    beq $t0, $t1, strcat        # if ($t0 == 5) -> executa strcat
+    li $t1, 6
+    beq $t0, $t1, encerrarPr    # if ($t0 == 6) -> encerrar programa
+
+    #Depuração e testes
     lw $a0, opcaoEscolhida
     printInt
 
+    encerrar
+
+strcpy:
+    encerrar
+
+memcpy:
+    encerrar
+
+strcmp:
+    encerrar
+
+strncmp:
+    encerrar
+
+strcat:
+    encerrar
+
+encerrarPr:
+    la $a0, encerrando
+    printString
     encerrar
