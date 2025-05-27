@@ -5,16 +5,11 @@
 # Daniel Dionísio de Oliveira
 # Gabriel Felipe Pontes da Silva Farias
 
-# Projeto - Sistema de cadastro de pessoas e automóveis para um condomínio
+# Questão 1 - Alternativa B
 
 
 .data
-    var: .asciiz "Opa"
 
 .text
 .globl main
 
-main:
-    la $a0, var
-    li $v0, 4
-    syscall
