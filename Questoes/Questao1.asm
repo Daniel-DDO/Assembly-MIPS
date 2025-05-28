@@ -24,11 +24,16 @@
 	userDigitou: .space 200
 	entradaInv: .asciiz "\nEntrada inválida. Tente novamente."
     
-
 	digiteStr: .asciiz "Digite uma string: "
 	voceDigitou: .asciiz "Você digitou: "
+	
+	#Variáveis do strcpy
+	stringCopia: .space 200
+	concluiuStrcpy: .asciiz "STRCPY\nString copiada com sucesso.\nString copiada: "
 
 	encerrando: .asciiz "\nEncerrando...\n"
+	
+	teste: .asciiz "Acabou."
 
 #Macros usuais
 
@@ -101,25 +106,53 @@ execucaoPrograma:
 	encerrar
 
 strcpy:
-	la $a0, textStrcpy          #$a0 = textStrcpy
-	printString                 #executa macro
+	la $a0, textStrcpy		#$a0 = textStrcpy
+	printString			#executa macro
 
 	quebra_linha
-	la $a0, digiteStr           #$a0 = digiteStr
+	la $a0, digiteStr		#$a0 = digiteStr
 	printString
-	li $v0, 8                   #chama serviço de scan string
-	la $a0, userDigitou         #userDigitou = $a0 (string que foi digitada)
-	la $a1, 200                 #tamanho da string em $a1
+	li $v0, 8			#chama serviço de scan string
+	la $a0, userDigitou		#userDigitou = $a0 (string que foi digitada)
+	la $a1, 200			#tamanho da string em $a1
 	syscall
 
+	quebra_linha			#executa macro
+	la $a0, voceDigitou		#$a0 = voceDigitou
+	printString			#executa macro
+	la $a0, userDigitou		#$a0 = userDigitou
+	printString			#executa macro
+	
+	la $t0, userDigitou		#$t0 = userDigitou
+	la $t2, stringCopia		#$t2 = stringCopia
+	loopStrcpy:
+		lb $t1, 0($t0)			#carrega os caracteres em cada posição
+		beq $t1, $0, voltarStrcpy	# if (string[i] == \0) -> voltarStrcpy
+	
+		li $v0, 11			#chama serviço para imprimir caracteres
+		move $a0, $t1			#move o [i] para $a0
+		#syscall			#chama impressão
+		
+		move $t3, $t1			#$t3 = $t1
+		sb $t3, 0($t2)			#salva os caracteres em cada posição
+	
+		addi $t0, $t0, 1		#incrementa o laço da string userDigitou
+		addi $t2, $t2, 1		#incrementa o laço da stringCopia
+	
+		j loopStrcpy			#volta para a próx. iteração
+	
+	voltarStrcpy:
+	
+	quebra_linha			#executa macro
+	la $a0, concluiuStrcpy		#$a0 = concluiuStrcpy
+	printString			#executa macro
+
+    	la $a0, stringCopia		#$a0 = stringCopia
+    	printString			#executa macro
+    	
 	#depuração
 	quebra_linha
-	la $a0, voceDigitou
-	printString
-	la $a0, userDigitou
-	printString
-    
-	encerrar
+	j execucaoPrograma
 
 memcpy:
 	la $a0, textMemcpy          #$a0 = textMemcpy
@@ -145,3 +178,10 @@ encerrarPr:
 	la $a0, encerrando          #$a0 = encerrando
 	printString                 #executa macro
 	encerrar
+
+
+
+#-----------------------------
+#Funções extras
+#-----------------------------
+
