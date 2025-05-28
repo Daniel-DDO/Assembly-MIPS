@@ -88,8 +88,8 @@ execucaoPrograma:
 	li $t1, 6
 	beq $t0, $t1, encerrarPr    # if ($t0 == 6) -> encerrar programa
 
-    	la $a0, entradaInv          #$a0 = entradaInv
-    	printString                 #executa macro
+	la $a0, entradaInv          #$a0 = entradaInv
+	printString                 #executa macro
 
 	j execucaoPrograma
 
