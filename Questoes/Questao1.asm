@@ -22,6 +22,8 @@
 	textStrcat: .asciiz "STRCAT"
 
 	userDigitou: .space 200
+	entradaInv: .asciiz "\nValor inválido. Tente novamente."
+    
 
 	digiteStr: .asciiz "Digite uma string: "
 	voceDigitou: .asciiz "Você digitou: "
@@ -85,6 +87,10 @@ execucaoPrograma:
 	beq $t0, $t1, strcat        # if ($t0 == 5) -> executa strcat
 	li $t1, 6
 	beq $t0, $t1, encerrarPr    # if ($t0 == 6) -> encerrar programa
+
+    	la $a0, entradaInv          #$a0 = entradaInv
+    	printString                 #executa macro
+
 	j execucaoPrograma
 
 
