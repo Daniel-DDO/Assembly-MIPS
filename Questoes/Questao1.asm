@@ -22,7 +22,7 @@
 	textStrcat: .asciiz "STRCAT"
 
 	userDigitou: .space 200
-	entradaInv: .asciiz "\nValor inválido. Tente novamente."
+	entradaInv: .asciiz "\nEntrada inválida. Tente novamente."
     
 
 	digiteStr: .asciiz "Digite uma string: "
