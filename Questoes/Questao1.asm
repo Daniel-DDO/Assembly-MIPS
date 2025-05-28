@@ -30,6 +30,13 @@
 	#Variáveis do strcpy
 	stringCopia: .space 200
 	concluiuStrcpy: .asciiz "STRCPY\nString copiada com sucesso.\nString copiada: "
+	
+	#Variáveis do strcat
+	stringFinalCat: .space 1000
+	stringDigitadaCat: .space 150
+	iteradorStrcat: .word 0
+	desejaContinuarCat: .asciiz "Deseja concatenar com mais uma string? Digite 1 para sim e qualquer outro número caso não queira. "
+	stringAtualCat: .asciiz "String atual, após STRCAT: "
 
 	encerrando: .asciiz "\nEncerrando...\n"
 	
@@ -170,9 +177,55 @@ strncmp:
 	encerrar
 
 strcat:
-	la $a0, textStrcat          #$a0 = textStrcat
-	printString                 #executa mmacro
-	encerrar
+	la $a0, textStrcat          	#$a0 = textStrcat
+	printString                 	#executa mmacro
+	quebra_linha			#executa macro
+	
+	continuaStrcat:
+	
+	la $a0, digiteStr		#$a0 = digiteStr
+	printString			#executa macro
+	li $v0, 8			#chama scan de string
+	la $a0, stringDigitadaCat	#$a0 = stringDigitadaCat
+	la $a1, 150			#$a1 = 150 (tamanho)
+	syscall				#chama serviço
+	
+	la $t0, stringDigitadaCat	#$a0 = stringDigitadaCat
+	la $t1, stringFinalCat		#$a1 = stringFinalCat
+	lw $t4, iteradorStrcat		#$t4 = iteradorStrcat
+	
+	add $t1, $t1, $t4		#regulariza o ponteiro para mostrar onde deve começar a inserir os próximos caracteres
+	loopStrcat:
+		lb $t2, 0($t0)
+		beq $t2, $0, voltaStrcat	# if ($t2 == 0) -> voltaStrcat
+		
+		move $t3, $t2			#$t3 = $t2
+		sb $t3, 0($t1)			#salva os caracteres em cada posição
+		
+		addi $t0, $t0, 1		#incrementa
+		addi $t1, $t1, 1		#incrementa
+		addi $t4, $t4, 1		#incrementa
+		sw $t4, iteradorStrcat		#salva na RAM a variável iteradorStrcat
+		j loopStrcat			#vai pra próx iteração do loop
+	
+	voltaStrcat:
+		la $a0, stringAtualCat		#$a0 = stringAtualCat
+		printString			#executa macro
+		la $a0, stringFinalCat		#$a0 = stringFinalCat
+		printString			#executa macro
+	
+		li $t3, 1			#$t3 = 1
+		la $a0, desejaContinuarCat	#$a0 = desejaContinuarCat
+		printString			#executa macro
+		
+		li $v0, 5			#chama scan de inteiro
+		syscall				#chama serviço
+		
+		addi $t4, $v0, 0		#$t4 = $v0 + 0
+		
+		beq $t4, $t3, continuaStrcat	# if ($t4 == $t3) -> continuaStrcat
+		j execucaoPrograma		#volta pro programa principal
+		
 
 encerrarPr:
 	la $a0, encerrando          #$a0 = encerrando
