@@ -36,7 +36,8 @@
 	string2Strcmp: .space 150
 	digitePrimeiraStrcmp: .asciiz "Digite a primeira string: "
 	digiteSeguntaStrcmp: .asciiz "Digite a segunda string; "
-	
+	saoIguaisStrcmp: .asciiz "As strings são iguais."
+	saoDiferentesStrcmp: .asciiz "As strings são diferentes."
 	
 	#Variáveis do strcat
 	stringFinalCat: .space 1000
@@ -199,28 +200,74 @@ strcmp:
 	printString
 	la $a0, string2Strcmp
 	printString
+	#fim dep
 	
+	la $a0, string1Strcmp		#$a0 = string1Strcmp
+	la $a1, string2Strcmp		#$a1 = string2Strcmp
+
+	loopStrcmp:
+		lb $t0, 0($a0)			#carrega os caracteres de cada posição do $a0 em loop
+		lb $t1, 0($a1)			#carrega os caracteres de cada posição do $a1 em loop
+
+		bne $t0, $t1, naoSaoIguaisStrcmp	# if ($t0 != $t1) -> vai para naoSaoIguaisStrcmp
+		beq $t0, $0, iguaisStrcmp		# if ($t0 == \0) -> vai para saoIguais
+
+		addi $a0, $a0, 1		#incrementa
+		addi $a1, $a1, 1		#incrementa
+		
+		j loopStrcmp			#volta pro loop
+		
 	quebra_linha
-	j execucaoPrograma
+	
+			
+	iguaisStrcmp:
+		la $a0, saoIguaisStrcmp		#$a0 = saoIguaisStrcmp
+		printString			#executa macro
+		quebra_linha			#executa macro
+		addi $a0, $0, 0			#$a0 = 0, ou seja, retorna 0 pois são iguais
+		printInt			#executa macro
+		j execucaoPrograma		#volta pro programa principal
+		
+	naoSaoIguaisStrcmp:
+		bgt $t0, $t1, maiorStrcmp	# if ($t0 > $t1) -> maiorStrcmp
+		blt $t0, $t1, menorStrcmp	# if ($t0 < $t1) -> menorStrcmp
+
+	maiorStrcmp:
+		la $a0, saoDiferentesStrcmp	#$a0 = saoDiferentesStrcmp
+		printString			#executa macro
+		quebra_linha			#executa macro
+		sub $t2, $t1, $t0		# $t2 = $t1 - $t0
+		add $a0, $0, $t2		# $a0 = $t2
+		printInt			#executa macro
+		j execucaoPrograma		#volta pro program principal
+	
+	menorStrcmp:
+		la $a0, saoDiferentesStrcmp	#$a0 = saoDiferentesStrcmp
+		printString			#executa macro
+		quebra_linha			#executa macro
+		sub $t2, $t1, $t0		# $t2 = $t1 - $t0
+		add $a0, $0, $t2		# $a0 = $t2
+		printInt			#executa macro
+		j execucaoPrograma		#volta pro pragrama principal
 
 strncmp:
-	la $a0, textStrncmp         #$a0 = textStrncmp
-	printString                 #executa macro
+	la $a0, textStrncmp		#$a0 = textStrncmp
+	printString			#executa macro
 	encerrar
 
 strcat:
-	la $a0, textStrcat          #$a0 = textStrcat
-	printString                 #executa mmacro
-	quebra_linha				#executa macro
+	la $a0, textStrcat		#$a0 = textStrcat
+	printString			#executa mmacro
+	quebra_linha			#executa macro
 	
 	continuaStrcat:
 	
 	la $a0, digiteStr			#$a0 = digiteStr
-	printString					#executa macro
-	li $v0, 8					#chama scan de string
-	la $a0, stringDigitadaCat	#$a0 = stringDigitadaCat
-	la $a1, 150					#$a1 = 150 (tamanho)
-	syscall						#chama serviço
+	printString				#executa macro
+	li $v0, 8				#chama scan de string
+	la $a0, stringDigitadaCat		#$a0 = stringDigitadaCat
+	la $a1, 150				#$a1 = 150 (tamanho)
+	syscall					#chama serviço
 	
 	la $t0, stringDigitadaCat	#$a0 = stringDigitadaCat
 	la $t1, stringFinalCat		#$a1 = stringFinalCat
@@ -237,18 +284,18 @@ strcat:
 		addi $t0, $t0, 1		#incrementa
 		addi $t1, $t1, 1		#incrementa
 		addi $t4, $t4, 1		#incrementa
-		sw $t4, iteradorStrcat	#salva na RAM a variável iteradorStrcat
+		sw $t4, iteradorStrcat		#salva na RAM a variável iteradorStrcat
 		j loopStrcat			#vai pra próx iteração do loop
 	
 	voltaStrcat:
 		la $a0, stringAtualCat		#$a0 = stringAtualCat
-		printString					#executa macro
+		printString			#executa macro
 		la $a0, stringFinalCat		#$a0 = stringFinalCat
-		printString					#executa macro
+		printString			#executa macro
 	
-		li $t3, 1					#$t3 = 1
+		li $t3, 1			#$t3 = 1
 		la $a0, desejaContinuarCat	#$a0 = desejaContinuarCat
-		printString					#executa macro
+		printString			#executa macro
 		
 		li $v0, 5			#chama scan de inteiro
 		syscall				#chama serviço
@@ -256,7 +303,7 @@ strcat:
 		addi $t4, $v0, 0		#$t4 = $v0 + 0
 		
 		beq $t4, $t3, continuaStrcat	# if ($t4 == $t3) -> continuaStrcat
-		j execucaoPrograma				#volta pro programa principal
+		j execucaoPrograma		#volta pro programa principal
 		
 
 encerrarPr:
