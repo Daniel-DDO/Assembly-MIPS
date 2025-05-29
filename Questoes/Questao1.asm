@@ -31,6 +31,13 @@
 	stringCopia: .space 200
 	concluiuStrcpy: .asciiz "STRCPY\nString copiada com sucesso.\nString copiada: "
 	
+	#Variáveis do strcmp
+	string1Strcmp: .space 150
+	string2Strcmp: .space 150
+	digitePrimeiraStrcmp: .asciiz "Digite a primeira string: "
+	digiteSeguntaStrcmp: .asciiz "Digite a segunda string; "
+	
+	
 	#Variáveis do strcat
 	stringFinalCat: .space 1000
 	stringDigitadaCat: .space 150
@@ -114,31 +121,31 @@ execucaoPrograma:
 
 strcpy:
 	la $a0, textStrcpy		#$a0 = textStrcpy
-	printString			#executa macro
+	printString				#executa macro
 
 	quebra_linha
 	la $a0, digiteStr		#$a0 = digiteStr
 	printString
-	li $v0, 8			#chama serviço de scan string
+	li $v0, 8				#chama serviço de scan string
 	la $a0, userDigitou		#userDigitou = $a0 (string que foi digitada)
-	la $a1, 200			#tamanho da string em $a1
+	la $a1, 200				#tamanho da string em $a1
 	syscall
 
 	quebra_linha			#executa macro
 	la $a0, voceDigitou		#$a0 = voceDigitou
-	printString			#executa macro
+	printString				#executa macro
 	la $a0, userDigitou		#$a0 = userDigitou
-	printString			#executa macro
+	printString				#executa macro
 	
 	la $t0, userDigitou		#$t0 = userDigitou
 	la $t2, stringCopia		#$t2 = stringCopia
 	loopStrcpy:
-		lb $t1, 0($t0)			#carrega os caracteres em cada posição
+		lb $t1, 0($t0)				#carrega os caracteres em cada posição
 		beq $t1, $0, voltarStrcpy	# if (string[i] == \0) -> voltarStrcpy
 	
-		li $v0, 11			#chama serviço para imprimir caracteres
+		li $v0, 11				#chama serviço para imprimir caracteres
 		move $a0, $t1			#move o [i] para $a0
-		#syscall			#chama impressão
+		#syscall				#chama impressão
 		
 		move $t3, $t1			#$t3 = $t1
 		sb $t3, 0($t2)			#salva os caracteres em cada posição
@@ -150,12 +157,12 @@ strcpy:
 	
 	voltarStrcpy:
 	
-	quebra_linha			#executa macro
+	quebra_linha				#executa macro
 	la $a0, concluiuStrcpy		#$a0 = concluiuStrcpy
-	printString			#executa macro
+	printString					#executa macro
 
     	la $a0, stringCopia		#$a0 = stringCopia
-    	printString			#executa macro
+    	printString				#executa macro
     	
 	#depuração
 	quebra_linha
@@ -169,7 +176,32 @@ memcpy:
 strcmp:
 	la $a0, textStrcmp          #$a0 = textStrcmp
 	printString                 #executa macro
-	encerrar
+	quebra_linha
+
+	la $a0, digitePrimeiraStrcmp #$a0 = digitePrimeiraStrcmp
+	printString					#executa macro
+
+	li $v0, 8					#chama serviço de scan de string
+	la $a0, string1Strcmp		#$a0 = string1Strcmp
+	la $a1, 150					#tamanho string = 150, em $a1
+	syscall
+
+	la $a0, digiteSeguntaStrcmp	#$a0 = digiteSegundaStrcmp
+	printString					#executa macro
+
+	li $v0, 8					#chama serviço de scan de string
+	la $a0, string2Strcmp		#$a0 = string2Strcmp
+	la $a1, 150					#tamanho string = 150 em $a1
+	syscall
+
+	#depuração
+	la $a0, string1Strcmp
+	printString
+	la $a0, string2Strcmp
+	printString
+	
+	quebra_linha
+	j execucaoPrograma
 
 strncmp:
 	la $a0, textStrncmp         #$a0 = textStrncmp
@@ -177,18 +209,18 @@ strncmp:
 	encerrar
 
 strcat:
-	la $a0, textStrcat          	#$a0 = textStrcat
-	printString                 	#executa mmacro
-	quebra_linha			#executa macro
+	la $a0, textStrcat          #$a0 = textStrcat
+	printString                 #executa mmacro
+	quebra_linha				#executa macro
 	
 	continuaStrcat:
 	
-	la $a0, digiteStr		#$a0 = digiteStr
-	printString			#executa macro
-	li $v0, 8			#chama scan de string
+	la $a0, digiteStr			#$a0 = digiteStr
+	printString					#executa macro
+	li $v0, 8					#chama scan de string
 	la $a0, stringDigitadaCat	#$a0 = stringDigitadaCat
-	la $a1, 150			#$a1 = 150 (tamanho)
-	syscall				#chama serviço
+	la $a1, 150					#$a1 = 150 (tamanho)
+	syscall						#chama serviço
 	
 	la $t0, stringDigitadaCat	#$a0 = stringDigitadaCat
 	la $t1, stringFinalCat		#$a1 = stringFinalCat
@@ -205,18 +237,18 @@ strcat:
 		addi $t0, $t0, 1		#incrementa
 		addi $t1, $t1, 1		#incrementa
 		addi $t4, $t4, 1		#incrementa
-		sw $t4, iteradorStrcat		#salva na RAM a variável iteradorStrcat
+		sw $t4, iteradorStrcat	#salva na RAM a variável iteradorStrcat
 		j loopStrcat			#vai pra próx iteração do loop
 	
 	voltaStrcat:
 		la $a0, stringAtualCat		#$a0 = stringAtualCat
-		printString			#executa macro
+		printString					#executa macro
 		la $a0, stringFinalCat		#$a0 = stringFinalCat
-		printString			#executa macro
+		printString					#executa macro
 	
-		li $t3, 1			#$t3 = 1
+		li $t3, 1					#$t3 = 1
 		la $a0, desejaContinuarCat	#$a0 = desejaContinuarCat
-		printString			#executa macro
+		printString					#executa macro
 		
 		li $v0, 5			#chama scan de inteiro
 		syscall				#chama serviço
@@ -224,7 +256,7 @@ strcat:
 		addi $t4, $v0, 0		#$t4 = $v0 + 0
 		
 		beq $t4, $t3, continuaStrcat	# if ($t4 == $t3) -> continuaStrcat
-		j execucaoPrograma		#volta pro programa principal
+		j execucaoPrograma				#volta pro programa principal
 		
 
 encerrarPr:
