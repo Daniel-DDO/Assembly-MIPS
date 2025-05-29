@@ -39,6 +39,16 @@
 	saoIguaisStrcmp: .asciiz "As strings são iguais."
 	saoDiferentesStrcmp: .asciiz "As strings são diferentes."
 	
+	#Variáveis do strncmp
+	string1Strncmp: .space 150
+	string2Strncmp: .space 150
+	tamanhoStrncmp: .word 0		#Quantos caracteres serão comparados
+	digitePrimeiraStrncmp: .asciiz "Digite a primeira string: "
+	digiteSegundaStrncmp: .asciiz "Digite a segunda string: "
+	digiteTamanhoStrncmp: .asciiz "Digite quantos caracteres serão comparados: "
+	saoIguaisStrncmp: .asciiz "As strings são iguais. "
+	saoDiferentesStrncmp: .asciiz "As strings são diferentes. "
+	
 	#Variáveis do strcat
 	stringFinalCat: .space 1000
 	stringDigitadaCat: .space 150
@@ -127,26 +137,26 @@ strcpy:
 	quebra_linha
 	la $a0, digiteStr		#$a0 = digiteStr
 	printString
-	li $v0, 8				#chama serviço de scan string
+	li $v0, 8			#chama serviço de scan string
 	la $a0, userDigitou		#userDigitou = $a0 (string que foi digitada)
-	la $a1, 200				#tamanho da string em $a1
+	la $a1, 200			#tamanho da string em $a1
 	syscall
 
 	quebra_linha			#executa macro
 	la $a0, voceDigitou		#$a0 = voceDigitou
-	printString				#executa macro
+	printString			#executa macro
 	la $a0, userDigitou		#$a0 = userDigitou
-	printString				#executa macro
+	printString			#executa macro
 	
 	la $t0, userDigitou		#$t0 = userDigitou
 	la $t2, stringCopia		#$t2 = stringCopia
 	loopStrcpy:
-		lb $t1, 0($t0)				#carrega os caracteres em cada posição
+		lb $t1, 0($t0)			#carrega os caracteres em cada posição
 		beq $t1, $0, voltarStrcpy	# if (string[i] == \0) -> voltarStrcpy
 	
-		li $v0, 11				#chama serviço para imprimir caracteres
+		li $v0, 11			#chama serviço para imprimir caracteres
 		move $a0, $t1			#move o [i] para $a0
-		#syscall				#chama impressão
+		#syscall			#chama impressão
 		
 		move $t3, $t1			#$t3 = $t1
 		sb $t3, 0($t2)			#salva os caracteres em cada posição
@@ -159,13 +169,12 @@ strcpy:
 	voltarStrcpy:
 	
 	quebra_linha				#executa macro
-	la $a0, concluiuStrcpy		#$a0 = concluiuStrcpy
-	printString					#executa macro
+	la $a0, concluiuStrcpy			#$a0 = concluiuStrcpy
+	printString				#executa macro
 
-    	la $a0, stringCopia		#$a0 = stringCopia
+    	la $a0, stringCopia			#$a0 = stringCopia
     	printString				#executa macro
     	
-	#depuração
 	quebra_linha
 	j execucaoPrograma
 
@@ -179,29 +188,22 @@ strcmp:
 	printString                 #executa macro
 	quebra_linha
 
-	la $a0, digitePrimeiraStrcmp #$a0 = digitePrimeiraStrcmp
-	printString					#executa macro
+	la $a0, digitePrimeiraStrcmp 	#$a0 = digitePrimeiraStrcmp
+	printString			#executa macro
 
-	li $v0, 8					#chama serviço de scan de string
+	li $v0, 8			#chama serviço de scan de string
 	la $a0, string1Strcmp		#$a0 = string1Strcmp
-	la $a1, 150					#tamanho string = 150, em $a1
+	la $a1, 150			#tamanho string = 150, em $a1
 	syscall
 
 	la $a0, digiteSeguntaStrcmp	#$a0 = digiteSegundaStrcmp
-	printString					#executa macro
+	printString			#executa macro
 
-	li $v0, 8					#chama serviço de scan de string
+	li $v0, 8			#chama serviço de scan de string
 	la $a0, string2Strcmp		#$a0 = string2Strcmp
-	la $a1, 150					#tamanho string = 150 em $a1
+	la $a1, 150			#tamanho string = 150 em $a1
 	syscall
 
-	#depuração
-	la $a0, string1Strcmp
-	printString
-	la $a0, string2Strcmp
-	printString
-	#fim dep
-	
 	la $a0, string1Strcmp		#$a0 = string1Strcmp
 	la $a1, string2Strcmp		#$a1 = string2Strcmp
 
@@ -218,7 +220,6 @@ strcmp:
 		j loopStrcmp			#volta pro loop
 		
 	quebra_linha
-	
 			
 	iguaisStrcmp:
 		la $a0, saoIguaisStrcmp		#$a0 = saoIguaisStrcmp
@@ -253,6 +254,66 @@ strcmp:
 strncmp:
 	la $a0, textStrncmp		#$a0 = textStrncmp
 	printString			#executa macro
+	
+	quebra_linha
+	
+	la $a0, digitePrimeiraStrncmp	#$a0 = digitePrimeiraStrncmp
+	printString			#executa macro
+	
+	li $v0, 8			#chama scan de string
+	la $a0, string1Strncmp		#$a0 = string1Strncmp
+	la $a1, 150			#$a1 = 150 (tamanho)
+	syscall				#executa serviço
+	
+	la $a0, digiteSegundaStrncmp	#$a0 = digiteSegundaStrncmp
+	printString			#executa macro
+	
+	li $v0, 8			#chama scan de string
+	la $a0, string2Strncmp		#$a0 = string2Strncmp
+	la $a1, 150			#$a1 = 150 (tamanho)
+	syscall				#executa serviço
+	
+	la $a0, digiteTamanhoStrncmp	#$a0 = digiteTamanhoStrncmp
+	printString			#executa macro
+	
+	readInt				#executa macro
+	addi $t0, $v0, 0		#$t0 = $v0 + 0
+	sw $t0, tamanhoStrncmp		#tamanhoStrncmp = $t0
+	
+	la $a0, string1Strncmp		#$a0 = string1Strncmp
+	la $a1, string2Strncmp		#$a1 = string2Strncmp
+	lw $a3, tamanhoStrncmp 		#$a3 = tamanhoStrncmp (num)
+	
+	loopStrncmp:
+		lb $t0, 0($a0)		#passa por cada caractere na iteração de $a0
+		lb $t1, 0($a1)		#passa por cada caractere na iteração de $a1
+		
+		beq $a3, $t1, verificaStringStrncmp	# if (iterador == tamanhoStrncmp) -> verificaStringStrncmp * (tem que mudar)
+		
+		beq $t0, $0, iguaisStrncmp		# if ($t0 == 0) -> chegou no \0 e são iguais
+		bne $t0, $t1, diferentesStrncmp		# if ($t0 != $t1) -> são diferentes
+		
+		addi $a0, $a0, 1	#incrementa
+		addi $a1, $a1, 1	#incrementa
+	
+		j loopStrncmp		#volta pro loop
+		
+	verificaStringStrncmp:
+		#depuração
+		li $t9, 194
+		move $a0, $t9
+		printInt
+		#fim dep
+		j execucaoPrograma
+	
+	iguaisStrncmp:
+
+		j execucaoPrograma
+		
+	diferentesStrncmp:
+		
+		j execucaoPrograma
+	
 	encerrar
 
 strcat:
@@ -316,4 +377,3 @@ encerrarPr:
 #-----------------------------
 #Funções extras
 #-----------------------------
-
