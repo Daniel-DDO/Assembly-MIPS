@@ -284,35 +284,34 @@ strncmp:
 	la $a1, string2Strncmp		#$a1 = string2Strncmp
 	lw $a3, tamanhoStrncmp 		#$a3 = tamanhoStrncmp (num)
 	
+	li $t4, 0			#$t4 = 0 (iterador numerico)
+	
 	loopStrncmp:
 		lb $t0, 0($a0)		#passa por cada caractere na iteração de $a0
 		lb $t1, 0($a1)		#passa por cada caractere na iteração de $a1
 		
-		beq $a3, $t1, verificaStringStrncmp	# if (iterador == tamanhoStrncmp) -> verificaStringStrncmp * (tem que mudar)
-		
-		beq $t0, $0, iguaisStrncmp		# if ($t0 == 0) -> chegou no \0 e são iguais
 		bne $t0, $t1, diferentesStrncmp		# if ($t0 != $t1) -> são diferentes
+		beq $t0, $0, iguaisStrncmp		# if ($t0 == 0) -> chegou no \0 e são iguais
 		
 		addi $a0, $a0, 1	#incrementa
 		addi $a1, $a1, 1	#incrementa
+		addi $t4, $t4, 1	#incrementa
+		
+		bge $t4, $a3, iguaisStrncmp
 	
 		j loopStrncmp		#volta pro loop
 		
-	verificaStringStrncmp:
-		#depuração
-		li $t9, 194
-		move $a0, $t9
-		printInt
-		#fim dep
-		j execucaoPrograma
-	
 	iguaisStrncmp:
-
-		j execucaoPrograma
+		la $a0, saoIguaisStrncmp	#$a0 = saoIguaisStrncmp
+		printString			#executa macro
+		quebra_linha			#executa macro
+		j execucaoPrograma		#volta para a execução principal
 		
 	diferentesStrncmp:
-		
-		j execucaoPrograma
+		la $a0, saoDiferentesStrncmp	#$a0 = saoDiferentesStrncmp
+		printString			#executa macro
+		quebra_linha			#executa macro
+		j execucaoPrograma		#volta para a execução principal
 	
 	encerrar
 
