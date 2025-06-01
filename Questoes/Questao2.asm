@@ -12,4 +12,6 @@
 
 .text
 .globl main
-
+main:
+	li $t0, 0xFFFF0000
+	
