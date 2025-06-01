@@ -31,6 +31,12 @@
 	stringCopia: .space 200
 	concluiuStrcpy: .asciiz "STRCPY\nString copiada com sucesso.\nString copiada: "
 	
+	#Variáveis do memcpy
+	memCopia: .space 200
+	concluiuMemcpy: .asciiz "MEMCPY\nCopiado com sucesso.\nBytes copiados: "
+	tamanhoMemcpy: .word 0
+	digiteTamanhoMemcpy: .asciiz "Digite o tamanho de cópia de bytes: "
+	
 	#Variáveis do strcmp
 	string1Strcmp: .space 150
 	string2Strcmp: .space 150
@@ -132,7 +138,7 @@ execucaoPrograma:
 
 strcpy:
 	la $a0, textStrcpy		#$a0 = textStrcpy
-	printString				#executa macro
+	printString			#executa macro
 
 	quebra_linha
 	la $a0, digiteStr		#$a0 = digiteStr
@@ -179,16 +185,61 @@ strcpy:
 	j execucaoPrograma
 
 memcpy:
-	la $a0, textMemcpy          #$a0 = textMemcpy
-	printString                 #executa macro
-	encerrar
+	la $a0, textMemcpy	#$a0 = textMemcpy
+	printString		#executa macro
+	
+	quebra_linha		#executa macro
+	
+	la $a0, digiteStr	#$a0 = digiteStr
+	printString		#executa macro
+	
+	li $v0, 8		#chama serviço de scan de string
+	la $a0, userDigitou	#$a0 = userDigitou
+	la $a1, 200		#$a1 = 200
+	syscall			#executa
+	
+	la $a0, digiteTamanhoMemcpy	#$a0 = digiteTamanhoMemcpy
+	printString		#executamacro
+	
+	readInt			#executa macro
+	move $a0, $v0		#$a0 = $v0
+	sw $a0, tamanhoMemcpy	#tamanhoMemcpy = $a0
+	
+		
+	la $a0, memCopia	#$a0 = memCopia (destino)
+	la $a1, userDigitou	#$a1 = userDigitou (origem)
+	lw $a2, tamanhoMemcpy	#$a2 = tamanhoMemcpy	
+	li $t0, 0		#iterador, iniciando em 0
+	
+	loopMemcpy:
+		bge $t0, $a2, saiLoopMemcpy	# if ($t0 >= $a2) -> sai do loop 
+		
+		lb $t1, 0($a1)		#carrega cada byte na iteração
+		
+		move $t2, $t1		#$t2 = $t1
+		sb $t2, 0($a0)		#salva em cada posição os bytes copiados
+		
+		addi $t0, $t0, 1	#incrementa o iterador
+		addi $a0, $a0, 1	#incrementa
+		addi $a1, $a1, 1	#incrementa
+		
+		j loopMemcpy		#volta loop
+		
+	saiLoopMemcpy:
+		quebra_linha		#executa macro
+		la $a0, concluiuMemcpy	#$a0 = concluiuMemcpy
+		printString		#executa macro
+		la $a0, memCopia	#$a0 = memCopia
+		printString		#executa macro
+		quebra_linha		#executa macro
+		j execucaoPrograma
 
 strcmp:
-	la $a0, textStrcmp          #$a0 = textStrcmp
-	printString                 #executa macro
+	la $a0, textStrcmp	#$a0 = textStrcmp
+	printString		#executa macro
 	quebra_linha
 
-	la $a0, digitePrimeiraStrcmp 	#$a0 = digitePrimeiraStrcmp
+	la $a0, digitePrimeiraStrcmp	#$a0 = digitePrimeiraStrcmp
 	printString			#executa macro
 
 	li $v0, 8			#chama serviço de scan de string
