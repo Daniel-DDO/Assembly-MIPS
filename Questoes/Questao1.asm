@@ -372,18 +372,18 @@ strcat:
 	quebra_linha			#executa macro
 	
 	limparStrcat:
-		la $t0, stringFinalCat
-		li $t1, 1000
-		li $t2, 0
+		la $t0, stringFinalCat	#$t0 = stringFinalCat
+		li $t1, 1000		#$t1 = 1000
+		li $t2, 0		#$t2 = 0
 	
 	limparBufferCat:
-		sb $t2, 0($t0)
-		addi $t0, $t0, 1
-		addi $t1, $t1, -1
-		bgtz $t1, limparBufferCat
+		sb $t2, 0($t0)		#salvar em $t2 o bit menos significativo
+		addi $t0, $t0, 1	#$t0 = $t0 + 1
+		addi $t1, $t1, -1	#$t1 = $t1 - 1
+		bgtz $t1, limparBufferCat	#if ($t1 > 0) -> limparBufferCat
 		
-		li $t4, 0
-		sw $t4, iteradorStrcat
+		li $t4, 0		#$t4 = 0
+		sw $t4, iteradorStrcat	#iteradorStrcat = $t4, ou seja, salva na variável
 	
 	continuaStrcat:
 	
