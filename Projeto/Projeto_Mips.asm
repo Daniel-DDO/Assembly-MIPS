@@ -9,12 +9,17 @@
 
 
 .data
-    var: .asciiz "Opa"
+    espaco: .space 26080
 
 .text
 .globl main
 
 main:
-    la $a0, var
-    li $v0, 4
-    syscall
+	#rascunho
+	la $a0, espaco
+	lb $t1, 4($a0)
+	
+	li $t2, 1
+	add $a0, $a0, $t2
+	add $t1, $t1, $t2
+
