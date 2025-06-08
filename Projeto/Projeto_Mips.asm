@@ -74,12 +74,11 @@
 .text
 .globl main
 
-	la $a0, apartamentos
-	li $t0, 1
-	li $t2, 40
+	la $a0, apartamentos	#$a0 = apartamentos
+	li $t0, 1		#$t0 = 1
+	li $t2, 40		#$t2 = 40
 	
 inicializarPrograma:
-	mul $t3, $t1, $t0
 	sw $t0, 0($a0)		#$a0[0 a 3] = $t0 
 	beq $t0, $t2, main	#if ($t0 == $t2) -> main
 	
@@ -89,7 +88,6 @@ inicializarPrograma:
 	j inicializarPrograma
 
 main:
-	quebra_linha			#executa macro
 	la $a0, escolherOpcao		#$a0 = escolherOpcao
 	printString			#executa macro
 	
@@ -147,6 +145,7 @@ buscarApartamento:
 	move $a0, $t2			#$a0 = $t2
 	printInt			#executa macro
 	
+	quebra_linha			#executa macro
 	j main
 	encerrar
 	
