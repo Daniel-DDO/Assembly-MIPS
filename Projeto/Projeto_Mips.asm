@@ -10,7 +10,14 @@
 
 .data
 	apartamentos: .space 17120
-	iApartamento: .word 0
+	indiceApartamento: .word 0
+	
+	#Texto
+	barraN: .asciiz "\n"
+	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 1 a 40): "
+	
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n9. Encerrar\n"
+	encerrandoPr: .asciiz "\nEncerrando...\n"
 	
 	# Estrutura do código:
 
@@ -18,7 +25,7 @@
 	#    0   - numApartamento (int)
 	#    4   - quantidadePessoas (int)
 	#    8   - nomeCompleto (char[]) (cada pessoa 64 caracteres)
-	#	 8   - pessoa1
+	#    8   - pessoa1
 	#   72   - pessoa2
 	#  136   - pessoa3
 	#  200   - pessoa4
@@ -67,7 +74,84 @@
 .text
 .globl main
 
+	la $a0, apartamentos
+	li $t0, 1
+	li $t2, 40
+	
+inicializarPrograma:
+	mul $t3, $t1, $t0
+	sw $t0, 0($a0)		#$a0[0 a 3] = $t0 
+	beq $t0, $t2, main	#if ($t0 == $t2) -> main
+	
+	addi $t0, $t0, 1	#incrementa 1 no $t0
+	addi $a0, $a0, 428	#incrementa 428 no .space
+	
+	j inicializarPrograma
+
 main:
+	quebra_linha			#executa macro
+	la $a0, escolherOpcao		#$a0 = escolherOpcao
+	printString			#executa macro
+	
+	readInt				#executa macro
+	move $t0, $v0			#$t0 = $v0
+	
+	li $t1, 1				#$t1 = 1
+	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
+	li $t1, 2				#$t1 = 2
+	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
+	li $t1, 9				#$t1 = 9
+	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
+	
+	j main				#volta pro main
+	encerrar			#executa macro
+	
+	
+visualizarInformacoes:
+	la $a1, apartamentos		#$a1 = apartamentos
+	li $t0, 1			#$t0 = 1
+	quebra_linha			#executa macro
+	
+	verificarCadaApt:
+		lw $t1, 0($a1)		#$t1 = $a1 [ 0 ] (vai somando 428 a cada iter.)
+		move $a0, $t1		#$a0 = $t1
+		printInt		#executa macro
+		
+		quebra_linha		#executa macro
+		beq $t0, 40, main	#if ($t0 == 40) -> main
+		
+		addi $t0, $t0, 1	#iterando, $t0 = $t0 + 1
+		addi $a1, $a1, 428	#iterando, $t0 = $t0 + 428
+		
+		j verificarCadaApt	#volta no loop
+	
+	j main			#pula para o main
+	encerrar		#executa macro
+
+
+buscarApartamento:
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+
+	readInt				#executa macro
+	add $t5, $0, $v0		#$t5 = $0 + $v0
+	subi $t5, $t5, 1		#$t5 = $t5 - 1 (estamos contando os apt de 1 até 40)
+	sw $t5, indiceApartamento	#indiceApartamento = $t5
+
+	#$t0 -> indice do apartamento a ser buscado.
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento
+	li $t1, 428			#$t1 = 428
+	mul $t2, $t1, $t0		#$t2 = 428 * indice
+	
+	move $a0, $t2			#$a0 = $t2
+	printInt			#executa macro
+	
+	j main
+	encerrar
+	
+
+main1:
 	#rascunho
 	la $a0, apartamentos
 	li $t1, 'D'
@@ -75,29 +159,19 @@ main:
 	sb $t1, 0($a0)
 	sb $t2, 1($a0)
 	
+	
 	lb $t3, 0($a0)
 	move $a0, $t3
 	printChar
 
+	j main
 	encerrar
 	
-carregarInformacoes:
-	la $t0, apartamentos	#$t0 = apartamentos
-	li $t1, 40		#$t1 = 40 (total de apartamentos)
-	li $t2, 0		#$t2 = 0 (contador)
+encerrarPrograma:
+	la $a0, encerrandoPr		#$a0 = encerrandoPr
+	printString			#executa macro
+	encerrar
+
 	
-acessarInformacoes:
-	li $t0, 428		#$t0 = 428 (múltiplo)
-	lw $t1, iApartamento	#$t1 = iApartamento (1, 2, 3... 39. 40)
 	
-	mul $t2, $t0, $t1	#$t2 = $t0 * $t1 (end de cada apt)
-	
-	addi $t3, $t3, 0	#$t3 = $t3 + 0
-	addi $t4, $t4, 4	#$t4 = $t4 + 4
-	addi $t5, $t5, 8	#$t5 = $t5 + 8
-	addi $t6, $t6, 328	#$t6 = $t6 + 328
-	addi $t7, $t7, 332	#$t7 = $t7 + 332
-	addi $t8, $t8, 396	#$t8 = $t8 + 396
-	
-		
 
