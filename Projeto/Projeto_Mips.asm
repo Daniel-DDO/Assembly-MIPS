@@ -18,8 +18,15 @@
 	#    0   - numApartamento (int)
 	#    4   - quantidadePessoas (int)
 	#    8   - nomeCompleto (char[]) (cada pessoa 64 caracteres)
+	#	 8   - pessoa1
+	#   72   - pessoa2
+	#  136   - pessoa3
+	#  200   - pessoa4
+	#  264   - pessoa5
 	#  328   - inteiroVeiculo (0. nenhum; 1. uma moto; 2. duas motos; 3. um carro) (int)
 	#  332   - modeloVeiculo (char[]) (cada modelo 32 caracteres)
+	#  332   - veiculo1
+	#  364   - veiculo2
 	#  396   - corVeiculo (char[]) (cara cor 16 caracteres)
 
 
