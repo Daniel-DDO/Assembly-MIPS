@@ -288,7 +288,7 @@ buscarApartamentoCondominio:
 			j loopIndiceApt
 		
 		retornaIndiceApt:
-			sw $t1, indiceApartamento
+			sw $t0, indiceApartamento
 		
 		concluiAptEncontrado:
 		jr $ra					#volta para inserirPessoaApt
