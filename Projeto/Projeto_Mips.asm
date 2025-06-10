@@ -19,7 +19,8 @@
 	aptNumEncontrado2: .asciiz " encontrado."
 	aptNumNaoEncontrado: .asciiz "Apartamento não encontrado. "
 	
-	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n9. Encerrar\n"
+	#Textos
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
 	
 	# Estrutura do código:
@@ -139,6 +140,8 @@ main:
 	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
 	li $t1, 2				#$t1 = 2
 	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
+	li $t1, 3				#$t1 = 3
+	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
 	li $t1, 9				#$t1 = 9
 	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
@@ -214,7 +217,53 @@ buscarApartamento:
 	encerrar
 	
 
+inserirPessoaApt:
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+	
+	readInt				#executa macro
+	add $t3, $0, $v0		#$t3 = $0 + $v0
+	
+	jal buscarApartamentoCondominio	
+	
+	encerrar
 
+buscarApartamentoCondominio:
+	la $a0, apartamentos		#$a0 = apartamentos
+	li $t1, 1			#$t1 = 1
+	li $t2, 40			#$t2 = 40
+	
+	loopBuscarApartamentoCondominio:
+		lw $t0, 0($a0)				#$t0 = $a0 []
+		beq $t3, $t0, apartamentoEncontradoC	#if ($t3 == $t0) -> apartamentoEncontrado
+		
+		beq $t1, $t2, apartamentoNaoEncontradoC	#if ($t1 == $t2) -> apartamentoNaoEncontrado
+		
+		addi $t1, $t1, 1			#incrementa 1 no $t1 (iterador)
+		addi $a0, $a0, 428			#incrementa 428 no $a0
+		
+		j loopBuscarApartamentoCondominio	#volta loop
+	
+	apartamentoEncontradoC:
+		quebra_linha				#executa macro
+		sw $t3, indiceApartamento		#indiceApartamento = $t5
+		la $a0, aptNumEncontrado1		#$a0 = aptNumEncontrado1
+		printString				#executa macro
+		lw $a0, indiceApartamento		#$a0 = indiceApartamento
+		printInt				#executa macro
+		la $a0, aptNumEncontrado2		#$a0 = aptNumEncontrado2
+		printString				#executa macro
+		quebra_linha				#executa macro
+		jr $ra					#volta para o main
+	
+	apartamentoNaoEncontradoC:
+		quebra_linha				#executa macro
+		la $a0, aptNumNaoEncontrado		#$a0 = aptNumNaoEncontrado
+		printString				#executa macro
+		quebra_linha				#executa macro
+		jr $ra					#volta para o main
+	
 
 main1:
 	#rascunho
