@@ -110,7 +110,7 @@ inicializarQtdPessoasApt:
 	la $a0, apartamentos	#$a0 = apartamentos
 	li $t0, 1		#$t0 = 1
 	li $t1, 40		#$t1 = 40
-	li $t2, 31		#$t2 = 0, quantidade inicial de pessoas
+	li $t2, 0		#$t2 = 0, quantidade inicial de pessoas
 	
 	loopInicializarQtdPessoasApt:
 		sw $t2, 4($a0)		#$a0[4] = $t2
