@@ -10,10 +10,10 @@
 
 .data
 	apartamentos: .space 17120
-	indiceApartamento: .word 0
-	
-	#Texto
 	barraN: .asciiz "\n"
+	
+	#Apartamentos
+	indiceApartamento: .word 0
 	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 101 a 1004): "
 	aptNumEncontrado1: .asciiz "Apartamento "
 	aptNumEncontrado2: .asciiz " encontrado."
@@ -83,9 +83,9 @@
 	li $t2, 40		#$t2 = 40
 	li $t5, 5		#$t5 = 5
 	
-inicializarPrograma:
+inicializarApartamentosPr:
 	sw $t1, 0($a0)		#$a0[0 a 3] = $t0 
-	beq $t0, $t2, main	#if ($t0 == $t2) -> main
+	beq $t0, $t2, inicializarQtdPessoasApt	#if ($t0 == $t2) -> inicializarQtdPessoasApt
 	
 	addi $t0, $t0, 1	#incrementa 1 no $t0
 	addi $a0, $a0, 428	#incrementa 428 no .space
@@ -103,8 +103,26 @@ inicializarPrograma:
 		jal somaApt		#vai para a função somaApt
 	
 	voltarPrograma:
-	j inicializarPrograma		#volta para o loop
+	j inicializarApartamentosPr	#volta para o loop
 
+
+inicializarQtdPessoasApt:
+	la $a0, apartamentos	#$a0 = apartamentos
+	li $t0, 1		#$t0 = 1
+	li $t1, 40		#$t1 = 40
+	li $t2, 0		#$t2 = 0, quantidade inicial de pessoas
+	
+	loopInicializarQtdPessoasApt:
+		sw $t2, 4($a0)		#$a0[4] = $t2
+		
+		beq $t0, $t1, main	#if ($t0 == $t1) -> main
+		
+		addi $t0, $t0, 1	#$t0 = $t0 + 1
+		addi $a0, $a0, 428	#$a0 = $a0 + 428
+		
+	j loopInicializarQtdPessoasApt	#volta loop
+	
+	
 somaApt:
 	addi $t1, $t1, 96	#$t1 = $t1 + 96
 	jr $ra			#volta para a função que chamou
@@ -193,9 +211,10 @@ buscarApartamento:
 		quebra_linha				#executa macro
 		j main					#volta para o main
 	
-
 	encerrar
 	
+
+
 
 main1:
 	#rascunho
