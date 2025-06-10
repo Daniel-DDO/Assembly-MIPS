@@ -240,8 +240,25 @@ inserirPessoaApt:
 	la $a1, 64			#$a1 = 64
 	syscall				#executa leitura
 	
-	lw $a0, indiceApartamento
-	printInt
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $t1, nomePessoa		#$t1 = nomePessoa
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	addi $a0, $a0, 8		#$t0 = $t0 + 8
+	
+	loopInserirNomePessoa:
+		lb $t2, 0($t1)				#$t1[0] = $t2 
+		beq $t2, $0, continuaInserirPessoaApt	#if ($t2 == 0) -> continuaInserirPessoaApt
+	
+		sb $t2, 0($a0)		#$a0[0] = $t2
+		
+		addi $t1, $t1, 1	#$t1 = $t1 + 1
+		addi $a0, $a0, 1	#$a0 = $a0 + 1
+		
+		j loopInserirNomePessoa	#volta loop
+	
+	continuaInserirPessoaApt:
 	
 	encerrar
 
