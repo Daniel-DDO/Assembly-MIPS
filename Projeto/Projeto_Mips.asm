@@ -11,6 +11,9 @@
 .data
 	apartamentos: .space 17120
 	nomePessoa: .space 64
+	inteiroVeiculo: .word 0
+	modeloVeiculo: .space 32
+	corVeiculo: .space 16
 	barraN: .asciiz "\n"
 	
 	digiteNomePessoaApt: .asciiz " - Digite o nome da pessoa (até 64 caracteres): "
