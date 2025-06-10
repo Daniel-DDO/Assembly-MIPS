@@ -10,7 +10,10 @@
 
 .data
 	apartamentos: .space 17120
+	nomePessoa: .space 64
 	barraN: .asciiz "\n"
+	
+	digiteNomePessoaApt: .asciiz " - Digite o nome da pessoa (até 64 caracteres): "
 	
 	#Apartamentos
 	indiceApartamento: .word 0
@@ -225,7 +228,17 @@ inserirPessoaApt:
 	readInt				#executa macro
 	add $t3, $0, $v0		#$t3 = $0 + $v0
 	
-	jal buscarApartamentoCondominio	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	la $a0, digiteNomePessoaApt	#$a0 = digiteNomePessoaApt
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, nomePessoa		#nomePessoa = $a0
+	la $a1, 64			#$a1 = 64
+	syscall				#executa leitura
 	
 	encerrar
 
@@ -255,14 +268,14 @@ buscarApartamentoCondominio:
 		la $a0, aptNumEncontrado2		#$a0 = aptNumEncontrado2
 		printString				#executa macro
 		quebra_linha				#executa macro
-		jr $ra					#volta para o main
+		jr $ra					#volta para inserirPessoaApt
 	
 	apartamentoNaoEncontradoC:
 		quebra_linha				#executa macro
 		la $a0, aptNumNaoEncontrado		#$a0 = aptNumNaoEncontrado
 		printString				#executa macro
 		quebra_linha				#executa macro
-		jr $ra					#volta para o main
+		j inserirPessoaApt			#volta para inserirPessoaApt no começo
 	
 
 main1:
