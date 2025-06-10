@@ -14,7 +14,10 @@
 	
 	#Texto
 	barraN: .asciiz "\n"
-	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 1 a 40): "
+	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 101 a 1004): "
+	aptNumEncontrado1: .asciiz "Apartamento "
+	aptNumEncontrado2: .asciiz " encontrado."
+	aptNumNaoEncontrado: .asciiz "Apartamento não encontrado. "
 	
 	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n9. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
@@ -154,19 +157,43 @@ buscarApartamento:
 
 	readInt				#executa macro
 	add $t5, $0, $v0		#$t5 = $0 + $v0
-	subi $t5, $t5, 1		#$t5 = $t5 - 1 (estamos contando os apt de 1 até 40)
-	sw $t5, indiceApartamento	#indiceApartamento = $t5
+	
+	la $a0, apartamentos		#$a0 = apartamentos
+	li $t1, 1			#$t1 = 1
+	li $t2, 40			#$t2 = 40
+	
+	loopBuscarApartamento:
+		lw $t0, 0($a0)				#$t0 = $a0 []
+		beq $t5, $t0, apartamentoEncontrado	#if ($t5 == $t0) -> apartamentoEncontrado
+		
+		beq $t1, $t2, apartamentoNaoEncontrado	#if ($t1 == $t2) -> apartamentoNaoEncontrado
+		
+		addi $t1, $t1, 1			#incrementa 1 no $t1 (iterador)
+		addi $a0, $a0, 428			#incrementa 428 no $a0
+		
+		j loopBuscarApartamento			#volta loop
+	
+	
+	apartamentoEncontrado:
+		quebra_linha				#executa macro
+		sw $t5, indiceApartamento		#indiceApartamento = $t5
+		la $a0, aptNumEncontrado1		#$a0 = aptNumEncontrado1
+		printString				#executa macro
+		lw $a0, indiceApartamento		#$a0 = indiceApartamento
+		printInt				#executa macro
+		la $a0, aptNumEncontrado2		#$a0 = aptNumEncontrado2
+		printString				#executa macro
+		quebra_linha				#executa macro
+		j main					#volta para o main
+	
+	apartamentoNaoEncontrado:
+		quebra_linha				#executa macro
+		la $a0, aptNumNaoEncontrado		#$a0 = aptNumNaoEncontrado
+		printString				#executa macro
+		quebra_linha				#executa macro
+		j main					#volta para o main
+	
 
-	#$t0 -> indice do apartamento a ser buscado.
-	lw $t0, indiceApartamento	#$t0 = indiceApartamento
-	li $t1, 428			#$t1 = 428
-	mul $t2, $t1, $t0		#$t2 = 428 * indice
-	
-	move $a0, $t2			#$a0 = $t2
-	printInt			#executa macro
-	
-	quebra_linha			#executa macro
-	j main
 	encerrar
 	
 
