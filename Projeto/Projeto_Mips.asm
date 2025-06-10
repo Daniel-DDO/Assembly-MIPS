@@ -76,16 +76,36 @@
 
 	la $a0, apartamentos	#$a0 = apartamentos
 	li $t0, 1		#$t0 = 1
+	li $t1, 101		#$t1 = 101
 	li $t2, 40		#$t2 = 40
+	li $t5, 5		#$t5 = 5
 	
 inicializarPrograma:
-	sw $t0, 0($a0)		#$a0[0 a 3] = $t0 
+	sw $t1, 0($a0)		#$a0[0 a 3] = $t0 
 	beq $t0, $t2, main	#if ($t0 == $t2) -> main
 	
 	addi $t0, $t0, 1	#incrementa 1 no $t0
 	addi $a0, $a0, 428	#incrementa 428 no .space
+	addi $t1, $t1, 1
 	
-	j inicializarPrograma
+	#Resto
+	move $t3, $t1		#$t3 = $t1
+	div $t3, $t5		#$t3 = $t3 / $t5
+	mfhi $t4		#resto da divisão
+	
+	beq $t4, $0, somaMais		#if ($t4 == 0) -> somaMais
+	bne $t4, $0, voltarPrograma	#if ($t4 != 0) -> voltarPrograma
+	
+	somaMais:
+		jal somaApt		#vai para a função somaApt
+	
+	voltarPrograma:
+	j inicializarPrograma		#volta para o loop
+
+somaApt:
+	addi $t1, $t1, 96	#$t1 = $t1 + 96
+	jr $ra			#volta para a função que chamou
+
 
 main:
 	la $a0, escolherOpcao		#$a0 = escolherOpcao
@@ -169,7 +189,7 @@ main1:
 encerrarPrograma:
 	la $a0, encerrandoPr		#$a0 = encerrandoPr
 	printString			#executa macro
-	encerrar
+	encerrar			#executa macro
 
 	
 	
