@@ -259,6 +259,16 @@ inserirPessoaApt:
 		j loopInserirNomePessoa	#volta loop
 	
 	continuaInserirPessoaApt:
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	addi $a0, $a0, 4		#$a0 = $a0 + 4
+	
+	lw $t1, 0($a0)			#$t1 = qtdPessoasApt
+	addi $t1, $t1, 1		#$t1 = $t1 + 1
+	sw $t1, 0($a0)			#$a0[] = $t1
+	
 	
 	encerrar
 
