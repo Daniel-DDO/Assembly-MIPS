@@ -16,6 +16,7 @@
 	digiteNomePessoaApt: .asciiz " - Digite o nome da pessoa (até 64 caracteres): "
 	
 	#Apartamentos
+	numApartamento: .word 0
 	indiceApartamento: .word 0
 	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 101 a 1004): "
 	aptNumEncontrado1: .asciiz "Apartamento "
@@ -93,8 +94,7 @@ inicializarApartamentosPr:
 	
 	addi $t0, $t0, 1	#incrementa 1 no $t0
 	addi $a0, $a0, 428	#incrementa 428 no .space
-	addi $t1, $t1, 1
-	
+	addi $t1, $t1, 1	#incrementa 1 no $t1	
 	#Resto
 	move $t3, $t1		#$t3 = $t1
 	div $t3, $t5		#$t3 = $t3 / $t5
@@ -240,6 +240,9 @@ inserirPessoaApt:
 	la $a1, 64			#$a1 = 64
 	syscall				#executa leitura
 	
+	lw $a0, indiceApartamento
+	printInt
+	
 	encerrar
 
 buscarApartamentoCondominio:
@@ -249,9 +252,9 @@ buscarApartamentoCondominio:
 	
 	loopBuscarApartamentoCondominio:
 		lw $t0, 0($a0)				#$t0 = $a0 []
-		beq $t3, $t0, apartamentoEncontradoC	#if ($t3 == $t0) -> apartamentoEncontrado
+		beq $t3, $t0, apartamentoEncontradoC	#if ($t3 == $t0) -> apartamentoEncontradoC
 		
-		beq $t1, $t2, apartamentoNaoEncontradoC	#if ($t1 == $t2) -> apartamentoNaoEncontrado
+		beq $t1, $t2, apartamentoNaoEncontradoC	#if ($t1 == $t2) -> apartamentoNaoEncontradoC
 		
 		addi $t1, $t1, 1			#incrementa 1 no $t1 (iterador)
 		addi $a0, $a0, 428			#incrementa 428 no $a0
@@ -268,6 +271,26 @@ buscarApartamentoCondominio:
 		la $a0, aptNumEncontrado2		#$a0 = aptNumEncontrado2
 		printString				#executa macro
 		quebra_linha				#executa macro
+		
+		la $a0, apartamentos
+		li $t0, 0
+		li $t1, 17120
+		lw $t2, indiceApartamento
+		
+		loopIndiceApt:
+			beq $t0, $t1, concluiAptEncontrado
+			lw $t3, 0($a0)
+			beq $t3, $t2, retornaIndiceApt
+			
+			addi $t0, $t0, 4
+			addi $a0, $a0, 4
+			
+			j loopIndiceApt
+		
+		retornaIndiceApt:
+			sw $t1, indiceApartamento
+		
+		concluiAptEncontrado:
 		jr $ra					#volta para inserirPessoaApt
 	
 	apartamentoNaoEncontradoC:
@@ -277,6 +300,10 @@ buscarApartamentoCondominio:
 		quebra_linha				#executa macro
 		j inserirPessoaApt			#volta para inserirPessoaApt no começo
 	
+
+carregarApt:
+	
+
 
 main1:
 	#rascunho
