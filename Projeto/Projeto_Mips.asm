@@ -235,6 +235,23 @@ inserirPessoaApt:
 	
 	move $a0, $t3			#$a0 = $t3
 	printInt			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+	quebra_linha
+	
+	#Tem que verifcar quantas pessoas existem naquele apartamento
+	la $a0, apartamentos
+	addi $t4, $t4, 4
+	add $a0, $a0, $t4
+	lw $t5, 0($a0)
+	add $a0, $0, $t5
+	printInt
+	
+	#li $t6, 5
+	#beq $t5, $t6, apartamentoEstaCheio
+	
+	quebra_linha
+	
 	la $a0, digiteNomePessoaApt	#$a0 = digiteNomePessoaApt
 	printString			#executa macro
 	
@@ -272,8 +289,8 @@ inserirPessoaApt:
 	addi $t1, $t1, 1		#$t1 = $t1 + 1
 	sw $t1, 0($a0)			#$a0[] = $t1
 	
-	
-	encerrar
+	j main
+
 
 buscarApartamentoCondominio:
 	la $a0, apartamentos		#$a0 = apartamentos
