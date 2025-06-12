@@ -25,6 +25,7 @@
 	aptNumEncontrado1: .asciiz "Apartamento "
 	aptNumEncontrado2: .asciiz " encontrado."
 	aptNumNaoEncontrado: .asciiz "Apartamento não encontrado. "
+	aptCheio: .asciiz "O apartamento está cheio. Não é possível adicionar um novo morador."
 	
 	#Textos
 	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Encerrar\n"
@@ -240,15 +241,21 @@ inserirPessoaApt:
 	quebra_linha
 	
 	#Tem que verifcar quantas pessoas existem naquele apartamento
-	la $a0, apartamentos
-	addi $t4, $t4, 4
-	add $a0, $a0, $t4
-	lw $t5, 0($a0)
-	add $a0, $0, $t5
-	printInt
+	la $a0, apartamentos		#$a0 = apartamentos
+	addi $t4, $t4, 4		#$t4 = $t4 + 4
+	add $a0, $a0, $t4		#$a0 = $a0 + $t4
+	lw $t5, 0($a0)			#$t5 = $a0[i] (carrega em t5 o valor que está na posicao de a0)
 	
-	#li $t6, 5
-	#beq $t5, $t6, apartamentoEstaCheio
+	li $t6, 5			#$t6 = 5
+	beq $t5, $t6, apartamentoEstaCheio	#if ($t5 == $t6) -> apartamentoEstaCheio
+	
+	mul $t7, $t5, 64		#$t7 = $t5 * 64
+	addi $t7, $t7, 8		#$t7 = $t7 + 8
+	
+	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome do morador a ser inserido
+	
+	add $a0, $0, $t7		
+	printInt
 	
 	quebra_linha
 	
@@ -265,7 +272,7 @@ inserirPessoaApt:
 	la $a0, apartamentos		#$a0 = apartamentos
 	
 	add $a0, $a0, $t0		#$a0 = $a0 + $t0
-	addi $a0, $a0, 8		#$t0 = $t0 + 8
+	add $a0, $a0, $t7		#$t0 = $t0 + $t7
 	
 	loopInserirNomePessoa:
 		lb $t2, 0($t1)				#$t1[0] = $t2 
@@ -291,6 +298,14 @@ inserirPessoaApt:
 	
 	j main
 
+
+apartamentoEstaCheio:
+	quebra_linha		#executa macro
+	la $a0, aptCheio	#$a0 = aptCheio
+	printString		#executa macro
+	quebra_linha		#executa macro
+	quebra_linha		#executa macro
+	j main
 
 buscarApartamentoCondominio:
 	la $a0, apartamentos		#$a0 = apartamentos
@@ -350,6 +365,7 @@ buscarApartamentoCondominio:
 
 carregarApt:
 	
+
 
 
 main1:
