@@ -149,6 +149,8 @@ main:
 	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
 	li $t1, 3				#$t1 = 3
 	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
+	li $t1, 6				#$t1 = 6
+	beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
 	li $t1, 9				#$t1 = 9
 	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
@@ -238,7 +240,9 @@ inserirPessoaApt:
 	printInt			#executa macro
 	
 	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
-	quebra_linha
+	quebra_linha			#executa macro
+	
+	bltz $t4, inserirPessoaApt	#se $t4 < 0, volta para o loop
 	
 	#Tem que verifcar quantas pessoas existem naquele apartamento
 	la $a0, apartamentos		#$a0 = apartamentos
@@ -254,10 +258,12 @@ inserirPessoaApt:
 	
 	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome do morador a ser inserido
 	
+	#depuração
 	add $a0, $0, $t7		
 	printInt
+	#fim dep
 	
-	quebra_linha
+	quebra_linha			#executa macro
 	
 	la $a0, digiteNomePessoaApt	#$a0 = digiteNomePessoaApt
 	printString			#executa macro
@@ -299,6 +305,27 @@ inserirPessoaApt:
 	j main
 
 
+removerPessoaApt:
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+	
+	readInt				#executa macro
+	add $t3, $0, $v0		#$t3 = $0 + $v0
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+	quebra_linha			#executa macro
+	
+	bltz $t4, removerPessoaApt	#se $t4 < 0, volta para o loop
+	
+	j main
+
+
 apartamentoEstaCheio:
 	quebra_linha		#executa macro
 	la $a0, aptCheio	#$a0 = aptCheio
@@ -306,6 +333,7 @@ apartamentoEstaCheio:
 	quebra_linha		#executa macro
 	quebra_linha		#executa macro
 	j main
+
 
 buscarApartamentoCondominio:
 	la $a0, apartamentos		#$a0 = apartamentos
@@ -359,8 +387,11 @@ buscarApartamentoCondominio:
 		quebra_linha				#executa macro
 		la $a0, aptNumNaoEncontrado		#$a0 = aptNumNaoEncontrado
 		printString				#executa macro
+		li $t0, -1				#$t0 = -1
+		sw $t0, indiceApartamento		#indiceApartamento = -1
 		quebra_linha				#executa macro
-		j inserirPessoaApt			#volta para inserirPessoaApt no começo
+		jr $ra
+		#j inserirPessoaApt			#volta para inserirPessoaApt no começo
 	
 
 carregarApt:
