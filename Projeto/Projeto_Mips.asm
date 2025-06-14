@@ -30,6 +30,7 @@
 	#Pessoas
 	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
 	pessoaExiste: .asciiz "Pessoa encontrada e removida com sucesso."
+	indicePessoa: .word 0
 	
 	#Textos
 	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Encerrar\n"
@@ -368,10 +369,42 @@ nomesDiferentesRem:
 	j removerPessoaApartamento
 
 nomesIguaisRem:
-	#tem que fazer a remoção
 	la $a0, pessoaExiste	#$a0 = pessoaExiste
 	printString		#executa macro
 	quebra_linha		#executa macro
+	
+	#tem que fazer a remoção
+	sw $t2, indicePessoa	#indicePessoa = $t2 (é o índice referente ao apartamento, ent começa 0, 64, 128...)
+	
+	lw $t0, indicePessoa		#$t0 = indicePessoa
+	lw $t1, indiceApartamento	#$t1 = indiceApartamento
+	add $t2, $t1, $t0		#$t2 = $t1 + $t0
+	addi $t2, $t2, 8		#$t2 = $t2 + 8
+	
+	la $a0, apartamentos		#$a0 = apartamentos
+	add $a0, $a0, $t2		#$a0 = $a0 + $t2
+	
+	li $t0, 0			#$t0 = 0 (iterador)
+	li $t1, 64			#$t1 = 64 (tam máximo da string nome)
+	li $t2, 0			#$t2 = 0 (para zerar as informações)
+	
+	loopLimparBytesPessoa:
+		beq $t0, $t1, pessoaRemovidaSuc 	#if ($t0 == $t1) -> pessoaRemovidaSuc
+	
+		lb $t3, 0($a0)		#$t3 = $a0[i]
+		
+		sb $t2, 0($a0)		#$a0[i] = $t2
+		
+		addi $t0, $t0, 1	#$t0 = $t0 + 1
+		addi $a0, $a0, 1	#$a0 = $a0 + 1
+		
+		j loopLimparBytesPessoa
+		
+	pessoaRemovidaSuc:
+	
+	
+	quebra_linha
+	
 	j main			#volta para o main
 	
 pessoaNaoExisteRem:
