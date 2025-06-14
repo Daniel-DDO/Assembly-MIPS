@@ -401,6 +401,12 @@ nomesIguaisRem:
 		j loopLimparBytesPessoa
 		
 	pessoaRemovidaSuc:
+	lw $t0, indicePessoa		#$t0 = indicePessoa
+	lw $t1, indiceApartamento	#$t1 = indiceApartamento
+	add $t2, $t1, $t0		#$t2 = $t1 + $t0
+	addi $t2, $t2, 8		#$t2 = $t2 + 8
+	
+	la $a0, apartamentos		#$a0 = apartamentos
 	
 	
 	quebra_linha
