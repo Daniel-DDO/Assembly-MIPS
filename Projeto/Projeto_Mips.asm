@@ -27,6 +27,10 @@
 	aptNumNaoEncontrado: .asciiz "Apartamento não encontrado. "
 	aptCheio: .asciiz "O apartamento está cheio. Não é possível adicionar um novo morador."
 	
+	#Pessoas
+	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
+	pessoaExiste: .asciiz "Pessoa encontrada e removida com sucesso."
+	
 	#Textos
 	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
@@ -319,12 +323,62 @@ removerPessoaApt:
 	printInt			#executa macro
 	
 	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
-	quebra_linha			#executa macro
-	
+
 	bltz $t4, removerPessoaApt	#se $t4 < 0, volta para o loop
 	
+	la $a0, digiteNomePessoaApt	#$a0 = digiteNomePessoaApt
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, nomePessoa		#nomePessoa = $a0
+	la $a1, 64			#$a1 = 64
+	syscall				#executa leitura
+	
+	addi $t4, $t4, 8		#$t4 = $t4 + 8, aonde começa os nomes das pessoas
+	
+	la $a0, apartamentos		#$a0 = apartamentos
+	la $a1, nomePessoa		#$a1 = nomePessoa
+	
+	add $a0, $a0, $t4		#$a0 = $a0 + $t4
+	
+	li $t2, 0			#$t2 = 0
+	
+	removerPessoaApartamento:
+		li $t3, 320			#$t2 = 320
+		add $a0, $a0, $t2		#$a0 = $a0 + $t2
+	
+	loopBuscarRemPessoaApt:
+		lb $t0, 0($a0)			#$t0 = $a0[i]
+		lb $t1, 0($a1)			#$t1 = $a1[i]
+		
+		bne $t0, $t1, nomesDiferentesRem	#if ($t0 != $t1) -> nomesDiferentesRem
+		beq $t0, $0, nomesIguaisRem		#if ($t0 == \0) -> nomesIguaisRem
+		
+		addi $a0, $a0, 1		#$a0 = $a0 + 1
+		addi $a1, $a1, 1		#$a1 = $a1 + 1
+		
+		j loopBuscarRemPessoaApt	#volta loop
+	
 	j main
+	
+nomesDiferentesRem:
+	beq $t2, $t3, pessoaNaoExisteRem	#if ($t2 == $t3) -> pessoaNaoExisteRem
 
+	addi $t2, $t2, 64	#$t2 = $t2 + 64
+	j removerPessoaApartamento
+
+nomesIguaisRem:
+	#tem que fazer a remoção
+	la $a0, pessoaExiste	#$a0 = pessoaExiste
+	printString		#executa macro
+	quebra_linha		#executa macro
+	j main			#volta para o main
+	
+pessoaNaoExisteRem:
+	la $a0, pessoaNaoExiste	#$a0 = pessoaNaoExiste
+	printString		#executa macro
+	quebra_linha		#executa macro
+	j main			#volta para o main
 
 apartamentoEstaCheio:
 	quebra_linha		#executa macro
