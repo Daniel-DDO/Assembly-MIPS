@@ -154,6 +154,8 @@ main:
 	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
 	li $t1, 3				#$t1 = 3
 	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
+	li $t1, 5				#$t1 = 5
+	beq $t0, $t1, inserirMotoApt		#if ($t0 == $t1) -> inserirMotoApt
 	li $t1, 6				#$t1 = 6
 	beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
 	li $t1, 9				#$t1 = 9
@@ -309,6 +311,110 @@ inserirPessoaApt:
 	
 	j main
 
+inserirMotoApt:
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+	
+	readInt				#executa macro
+	add $t3, $0, $v0		#$t3 = $0 + $v0
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+	quebra_linha			#executa macro
+	
+	bltz $t4, inserirMotoApt	#se $t4 < 0, volta para o loop
+	
+	#Tem que verifcar quantos veículos existem naquele apartamento
+	la $a0, apartamentos		#$a0 = apartamentos
+	addi $t4, $t4, 328		#$t4 = $t4 + 4
+	add $a0, $a0, $t4		#$a0 = $a0 + $t4
+	lw $t5, 0($a0)			#$t5 = $a0[i] (carrega em t5 o valor que está na posicao de a0)
+	
+	li $t6, 2			#$t6 = 2
+	bge $t5, $t6, apartamentoEstaCheio	#if ($t5 == $t6) -> apartamentoEstaCheio
+	
+	mul $t7, $t5, 32		#$t7 = $t5 * 32
+	addi $t7, $t7, 332		#$t7 = $t7 + 332
+	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome do modelo a ser inserido
+	
+	#depuração
+	add $a0, $0, $t7		
+	printInt
+	#fim dep
+	
+	quebra_linha			#executa macro
+	
+	la $a0, digiteNomePessoaApt	#$a0 = digiteModeloVeiculoApt
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, modeloVeiculo		#modeloVeiculo = $a0
+	la $a1, 32			#$a1 = 32
+	syscall				#executa leitura
+	
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $t1, modeloVeiculo		#$t1 = modeloVeiculo
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	add $a0, $a0, $t7		#$t0 = $t0 + $t7
+	
+	loopInserirModeloVeiculoApt:
+		lb $t2, 0($t1)				#$t1[0] = $t2 
+		beq $t2, $0, continuaInserirModeloVeiculoApt	#if ($t2 == 0) -> continuaInserirPessoaApt
+	
+		sb $t2, 0($a0)		#$a0[0] = $t2
+		
+		addi $t1, $t1, 1	#$t1 = $t1 + 1
+		addi $a0, $a0, 1	#$a0 = $a0 + 1
+		
+		j loopInserirModeloVeiculoApt	#volta loop
+	
+	continuaInserirModeloVeiculoApt:
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	addi $a0, $a0, 328		#$a0 = $a0 + 328
+	
+	lw $t1, 0($a0)			#$t1 = inteiroVeiculo
+	addi $t1, $t1, 1		#$t1 = $t1 + 1
+	sw $t1, 0($a0)			#$a0[] = $t1
+	
+	mul $t7, $t5, 16		#$t7 = $t5 * 16
+	addi $t7, $t7, 396		#$t7 = $t7 + 396
+	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome da cor a ser inserida
+
+quebra_linha			#executa macro
+	
+	la $a0, digiteNomePessoaApt	#$a0 = digitecorVeiculoApt
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, corVeiculo		#modeloVeiculo = $a0
+	la $a1, 16			#$a1 = 16
+	syscall				#executa leitura
+	
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $t1, corVeiculo		#$t1 = corVeiculo
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	add $a0, $a0, $t7		#$t0 = $t0 + $t7
+	
+	loopInserirCorVeiculoApt:
+		lb $t2, 0($t1)				#$t1[0] = $t2 
+		sb $t2, 0($a0)		#$a0[0] = $t2		
+		addi $t1, $t1, 1	#$t1 = $t1 + 1
+		addi $a0, $a0, 1	#$a0 = $a0 + 1
+		bnez $t2 loopInserirCorVeiculoApt #Volta o loop
+	
+	j main	
 
 removerPessoaApt:
 	quebra_linha			#executa macro
