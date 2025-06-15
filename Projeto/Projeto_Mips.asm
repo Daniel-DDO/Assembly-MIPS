@@ -407,10 +407,19 @@ nomesIguaisRem:
 	addi $t2, $t2, 8		#$t2 = $t2 + 8
 	
 	la $a0, apartamentos		#$a0 = apartamentos
+	add $a0, $a0, $t1		#$a0 = $a0 + $t1
+	lw $t3, 4($a0)			#$t3 = $a0[4]
+	addi $t4, $t3, 0		#$t4 = $t3 + 0
+	mul $t4, $t3, 64		#$t4 = $t3 * 64
 	
+	moverPessoaParaPosRem:
+		
+	
+	subi $t3, $t3, 1		#$t3 = $t3 - 1
+	sw $t3, 4($a0)			#$a0[4] = $t3
 	
 	quebra_linha
-	
+	encerrar
 	j main			#volta para o main
 	
 pessoaNaoExisteRem:
