@@ -402,24 +402,32 @@ nomesIguaisRem:
 		
 	pessoaRemovidaSuc:
 	lw $t0, indicePessoa		#$t0 = indicePessoa
+
 	lw $t1, indiceApartamento	#$t1 = indiceApartamento
+
 	add $t2, $t1, $t0		#$t2 = $t1 + $t0
 	addi $t2, $t2, 8		#$t2 = $t2 + 8
-	
+
 	la $a0, apartamentos		#$a0 = apartamentos
 	add $a0, $a0, $t1		#$a0 = $a0 + $t1
 	lw $t3, 4($a0)			#$t3 = $a0[4]
-	addi $t4, $t3, 0		#$t4 = $t3 + 0
-	mul $t4, $t3, 64		#$t4 = $t3 * 64
-	
+
+	subi $t4, $t3, 1		#$t4 = $t3 - 1
+	mul $t4, $t4, 64		#$t4 = $t4 * 64
+
+	add $t5, $t4, $t2
+	add $a0, $a0, $t5
+
 	moverPessoaParaPosRem:
+		#lb $t6, 0($a0)
+	
+		#sb $t6,  
 		
 	
 	subi $t3, $t3, 1		#$t3 = $t3 - 1
 	sw $t3, 4($a0)			#$a0[4] = $t3
 	
 	quebra_linha
-	encerrar
 	j main			#volta para o main
 	
 pessoaNaoExisteRem:
