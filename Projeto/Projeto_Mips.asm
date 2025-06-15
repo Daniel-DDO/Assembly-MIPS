@@ -12,6 +12,7 @@
 	apartamentos: .space 17120
 	nomePessoa: .space 64
 	inteiroVeiculo: .word 0
+	tipoVeiculo: .space 10
 	modeloVeiculo: .space 32
 	corVeiculo: .space 16
 	barraN: .asciiz "\n"
@@ -31,27 +32,43 @@
 	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
 	pessoaExiste: .asciiz "Pessoa encontrada e removida com sucesso."
 	indicePessoa: .word 0
+
+	#Carro
+	digiteModeloCarro: .asciiz "Digite o modelo do carro (até 32 caracteres): "
+	digiteCorCarro: .asciiz "Digite a cor do carro (até 16 caracteres): "
+	carroAdicionadoSucesso: .asciiz "Carro adicionado com sucesso!"
+	aptoNaoPodeTerVeiculo: .asciiz "Falha: AP com numero max de automóveis"
+	digiteTipoVeiculo: .asciiz "Digite (m) para moto ou (c) para carro: "
+	tipoVeiculoInvalido: .asciiz "Tipo de veículo inválido"
+	aptoNaoPodeTerCarro: .asciiz "Esse apartamento não pode ter carro"
+
+	#Moto
+	digiteModeloMoto: .asciiz "Digite o modelo da moto (até 32 caracteres): "
+	digiteCorMoto: .asciiz "Digite a cor da moto (até 16 caracteres): "
+	motoAdicionadaSucesso: .asciiz "Moto adicionada com sucesso!"
 	
 	#Textos
-	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Encerrar\n"
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Inserir carro\n5. Inserir moto\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n9. Adicionar automóvel\n10. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
 	
 	# Estrutura do código:
 
 	# Offset - Campo
-	#    0   - numApartamento (int)
-	#    4   - quantidadePessoas (int)
-	#    8   - nomeCompleto (char[]) (cada pessoa 64 caracteres)
-	#    8   - pessoa1
-	#   72   - pessoa2
-	#  136   - pessoa3
-	#  200   - pessoa4
-	#  264   - pessoa5
-	#  328   - inteiroVeiculo (0. nenhum; 1. uma moto; 2. duas motos; 3. um carro) (int)
-	#  332   - modeloVeiculo (char[]) (cada modelo 32 caracteres)
-	#  332   - veiculo1
-	#  364   - veiculo2
-	#  396   - corVeiculo (char[]) (cara cor 16 caracteres)
+	#  numApartamento - 0 (int)
+	#  quantidadePessoas - 4 (int)
+	#  nomeCompleto (char[]) (cada pessoa 64 caracteres)
+	#      pessoa1 - 8
+	#      pessoa2 - 72
+	#      pessoa3 - 136
+	#      pessoa4 - 200
+	#      pessoa5 - 264
+	#  inteiroVeiculo - 328 (0. nenhum; 1. uma moto; 2. duas motos; 3. um carro) (int)
+	#  modeloVeiculo (char[]) (cada modelo 32 caracteres)
+	#      modeloVeiculo1 - 332
+	#      modeoVeiculo2 - 364
+	#  corVeiculo (char[]) (cada cor 16 caracteres)
+	#      corVeiculo1 - 396 
+	#      corVeiculo2 - 412
 
 
 #Macros usuais
