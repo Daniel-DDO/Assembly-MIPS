@@ -475,65 +475,83 @@ nomesDiferentesRem:
 	j removerPessoaApartamento
 
 nomesIguaisRem:
+	quebra_linha		#executa macro
+
+	sw $t2, indicePessoa	#indicePessoa = $t2 (é o índice referente ao apartamento, ent começa 0, 64, 128...)
+		
+	lw $t0, indicePessoa	#$t0 = indicePessoa 
+	lw $t1, indiceApartamento #$t1 = indiceApartamento 
+
+	la $a0, apartamentos	#$a0 = apartamentos
+	add $a0, $a0, $t1	#$a0 = $a0 + $t1
+
+	lw $t2, 4($a0)		#$t2 = $a0[4] (qtd pessoas)
+
+	addi $t3, $a0, 8	#$t3 = $a0 + 8 (offset que inicia as pessoas)
+	add  $t3, $t3, $t0	#$t3 = $t3 + $t0 (endereço da pessoa a ser removida)
+
+	subi $t4, $t2, 1	#$t4 = $t2 - 1 (quantidade -1)
+	mul  $t4, $t4, 64	#$t4 = $t4 * 64
+	addi $t5, $a0, 8	#$t5 = $a0 + 8 (início da lista de pessoas)
+	add  $t5, $t5, $t4	#$t5 = $t5 + $t4 (end da última pessoa)
+
+	li $t6, 0		#iterador
+	li $t7, 64		#iterador
+
+	loopLimparBytesPessoa:
+		beq $t6, $t7, pessoaRemovidaSuc 	#if ($t6 == $t7) -> pessoaRemovidaSuc
+	
+		sb $0, 0($t3)		#$t3[i] = 0 (limpeza)
+		
+    		addi $t3, $t3, 1	#$t3 = $t3 + 1
+		addi $t6, $t6, 1	#$t6 = $t6 + 1
+		
+	j loopLimparBytesPessoa
+		
+	pessoaRemovidaSuc:
+	addi $t3, $a0, 8	#$t3 = $a0 + 8
+    	add  $t3, $t3, $t0	#$t3 = $t3 + $t0
+
+	addi $t9, $a0, 8	#$t9 = $a0 + 8
+	add  $t9, $t9, $t4	#$t9 = $t9 + $t4
+
+    	li $t6, 0		#iterador
+	li $t8, 64		#iterador
+	
+	moverPessoaParaPosRem:
+    		beq $t6, $t8, concluirRemocaoPessoa	#if ($t6 == $t8) -> concluirRemocaoPessoa
+
+    		lb $t7, 0($t5)		#$t7 = $t5[i]
+    		sb $t7, 0($t3)		#$t3[i] = $t7
+
+    		addi $t3, $t3, 1	#$t3 = $t3 + 1
+    		addi $t5, $t5, 1	#$t5 = $t5 + 1
+    		addi $t6, $t6, 1	#$t6 = $t6 + 1
+
+	j moverPessoaParaPosRem
+	
+	concluirRemocaoPessoa:
+
+	subi $t2, $t2, 1	#$t2 = $t2 - 1
+	sw $t2, 4($a0)		#$a0[4] = $t2
+
+	li $t6, 0		#$t6 = 0
+	li $t7, 64		#$t7 = 64
+
+	limparUltimaPessoa:
+	beq $t6, $t7, pessoaRemocaoConcluida	#if ($t6 == $t7) -> pessoaRemocaoConcluida
+
+	sb $0, 0($t9)		#$t5[i] = \0
+	addi $t9, $t9, 1	#$t5 = $t5 + 1
+	addi $t6, $t6, 1	#$t6 = $t6 + 1
+
+	j limparUltimaPessoa	#volta loop
+
+pessoaRemocaoConcluida:
 	la $a0, pessoaExiste	#$a0 = pessoaExiste
 	printString		#executa macro
 	quebra_linha		#executa macro
 	
-	#tem que fazer a remoção
-	sw $t2, indicePessoa	#indicePessoa = $t2 (é o índice referente ao apartamento, ent começa 0, 64, 128...)
-	
-	lw $t0, indicePessoa		#$t0 = indicePessoa
-	lw $t1, indiceApartamento	#$t1 = indiceApartamento
-	add $t2, $t1, $t0		#$t2 = $t1 + $t0
-	addi $t2, $t2, 8		#$t2 = $t2 + 8
-	
-	la $a0, apartamentos		#$a0 = apartamentos
-	add $a0, $a0, $t2		#$a0 = $a0 + $t2
-	
-	li $t0, 0			#$t0 = 0 (iterador)
-	li $t1, 64			#$t1 = 64 (tam máximo da string nome)
-	li $t2, 0			#$t2 = 0 (para zerar as informações)
-	
-	loopLimparBytesPessoa:
-		beq $t0, $t1, pessoaRemovidaSuc 	#if ($t0 == $t1) -> pessoaRemovidaSuc
-	
-		lb $t3, 0($a0)		#$t3 = $a0[i]
-		
-		sb $t2, 0($a0)		#$a0[i] = $t2
-		
-		addi $t0, $t0, 1	#$t0 = $t0 + 1
-		addi $a0, $a0, 1	#$a0 = $a0 + 1
-		
-		j loopLimparBytesPessoa
-		
-	pessoaRemovidaSuc:
-	lw $t0, indicePessoa		#$t0 = indicePessoa
-
-	lw $t1, indiceApartamento	#$t1 = indiceApartamento
-
-	add $t2, $t1, $t0		#$t2 = $t1 + $t0
-	addi $t2, $t2, 8		#$t2 = $t2 + 8
-
-	la $a0, apartamentos		#$a0 = apartamentos
-	add $a0, $a0, $t1		#$a0 = $a0 + $t1
-	lw $t3, 4($a0)			#$t3 = $a0[4]
-
-	subi $t4, $t3, 1		#$t4 = $t3 - 1
-	mul $t4, $t4, 64		#$t4 = $t4 * 64
-
-	add $t5, $t4, $t2
-	add $a0, $a0, $t5
-
-	moverPessoaParaPosRem:
-		#lb $t6, 0($a0)
-	
-		#sb $t6,  
-		
-	
-	subi $t3, $t3, 1		#$t3 = $t3 - 1
-	sw $t3, 4($a0)			#$a0[4] = $t3
-	
-	quebra_linha
 	j main			#volta para o main
 	
 pessoaNaoExisteRem:
