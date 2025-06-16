@@ -61,6 +61,31 @@
 	textMotoModelo: .asciiz "Modelo: "
 	textMotoCor: .asciiz "Cor: "
 	
+	
+	#Mensagens e comandos
+	shellGDA: .asciiz "GDA-shell>>"
+	comandoInvalido: .asciiz "Comando inválido.\n"
+	ad_morador: .asciiz "ad_morador"
+	rm_morador: .asciiz "rm_morador"
+	ad_auto: .asciiz "ad_auto"
+	rm_auto: .asciiz "rm_auto"
+	limpar_ap: .asciiz "limpar_ap"
+	info_ap: .asciiz "info_ap"
+	info_geral: .asciiz "info_geral"
+	salvar: .asciiz "salvar"
+	recarregar: .asciiz "recarregar"
+	formatar: .asciiz "formatar"
+	exit: .asciiz "exit"
+
+	#Entrada
+	userDigitou: .space 100
+
+	#Argumentos separados
+	option1: .space 20
+	option2: .space 64
+	option3: .space 32
+	option4: .space 16
+	
 	# Estrutura do código:
 
 	# Offset - Campo
@@ -155,7 +180,7 @@ inicializarQtdPessoasApt:
 	loopInicializarQtdPessoasApt:
 		sw $t2, 4($a0)		#$a0[4] = $t2
 		
-		beq $t0, $t1, main	#if ($t0 == $t1) -> main
+		beq $t0, $t1, programaPrincipal	#if ($t0 == $t1) -> main
 		
 		addi $t0, $t0, 1	#$t0 = $t0 + 1
 		addi $a0, $a0, 428	#$a0 = $a0 + 428
@@ -168,6 +193,223 @@ somaApt:
 	jr $ra			#volta para a função que chamou
 
 
+programaPrincipal:
+iniciarShellPrograma:
+	la $a0, shellGDA	#$a0 = shellGDA
+	printString		#executa macro
+
+	li $v0, 8		#$v0=8
+	la $a0, userDigitou	#$a0=userDigitou
+	li $a1, 100		#$a1=100
+	syscall			#executa syscall (leitura)
+
+	la $a2, userDigitou	#$a2=userDigitou
+	la $t1, option1		#$t1=option1
+	la $t2, option2		#$t2=option2
+	la $t3, option3		#$t3=option3
+	la $t4, option4		#$t4=option4
+	li $t5, 0		#$t5=0
+
+loopEntradaUsuario:
+	lb $t6, 0($a2)		#$t6=char atual
+	beq $t6, $0, finalStringShell	#se fim da string, vai finalizar
+
+	li $t7, 45		#$t7=45 ('-')
+	beq $t6, $t7, proximoOptionShell	#se '-', troca argumento
+
+	li $t7, 3		#$t7=3 (limite de '-')
+	bgt $t5, $t7, erroArgumentos	#se mais de 4 args, erro
+
+	beq $t5, 0, salvarOption1	#se 0, salva no option1
+	beq $t5, 1, salvarOption2	#se 1, salva no option2
+	beq $t5, 2, salvarOption3	#se 2, salva no option3
+	beq $t5, 3, salvarOption4	#se 3, salva no option4
+
+continuarLoopEntrada:
+	addi $a2, $a2, 1	#$a2++
+	j loopEntradaUsuario	#volta pro loop
+
+salvarOption1:
+	sb $t6, 0($t1)			#salva no option1
+	addi $t1, $t1, 1		#$t1++
+	j continuarLoopEntrada
+
+salvarOption2:
+	sb $t6, 0($t2)			#salva no option2
+	addi $t2, $t2, 1		#$t2++
+	j continuarLoopEntrada
+
+salvarOption3:
+	sb $t6, 0($t3)			#salva no option3
+	addi $t3, $t3, 1		#$t3++
+	j continuarLoopEntrada
+
+salvarOption4:
+	sb $t6, 0($t4)			#salva no option4
+	addi $t4, $t4, 1		#$t4++
+	j continuarLoopEntrada
+
+proximoOptionShell:
+	addi $t5, $t5, 1		#$t5++
+	addi $a2, $a2, 1		#$a2++
+	j loopEntradaUsuario
+
+finalStringShell:
+	sb $0, 0($t1)			#termina option1
+	sb $0, 0($t2)			#termina option2
+	sb $0, 0($t3)			#termina option3
+	sb $0, 0($t4)			#termina option4
+
+	j verificarComando		#vai verificar comando
+
+erroArgumentos:
+	la $a0, comandoInvalido		#$a0=comandoInvalido
+	printString			#executa macro
+	j programaPrincipal		#volta pro programaPrincipal
+
+verificarComando:
+	la $a0, ad_morador		#$a0 = ad_morador
+	la $a1, option1			#$a1 = option1
+	jal compararStrings		#chama comparar
+	beq $v0, 1, adicionarMorador	#se igual, vai
+
+	la $a0, rm_morador		#$a0=rm_morador
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, removerMorador
+
+	la $a0, ad_auto			#$a0=ad_auto
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, adicionarAuto
+
+	la $a0, rm_auto			#$a0=rm_auto
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, removerAuto
+
+	la $a0, limpar_ap		#$a0=limpar_ap
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, limparApartamento
+
+	la $a0, info_ap			#$a0=info_ap
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, infoApartamento
+
+	la $a0, info_geral		#$a0=info_geral
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, infoGeral
+
+	la $a0, salvar			#$a0=salvar
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, salvarDados
+
+	la $a0, recarregar		#$a0=recarregar
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, recarregarDados
+
+	la $a0, formatar		#$a0=formatar
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, formatarSistema
+
+	la $a0, exit			#$a0=exit
+	la $a1, option1			#$a1=option1
+	jal compararStrings
+	beq $v0, 1, encerrarPrograma
+
+	la $a0, comandoInvalido		#$a0=comandoInvalido
+	printString			#executa macro
+	j programaPrincipal		#volta pro programaPrincipal
+
+compararStrings:
+	li $v0, 1			#$v0=1 (assume igual)
+
+loopComparandoString:
+	lb $t7, 0($a0)			#$t7=char string1
+	lb $t8, 0($a1)			#$t8=char string2
+
+	bne $t7, $t8, stringNaoIguaisComp	#se diferente, não iguais
+	beq $t7, $0, stringIguaisComp	#se fim, são iguais
+
+	addi $a0, $a0, 1		#$a0++
+	addi $a1, $a1, 1		#$a1++
+	j loopComparandoString
+
+stringNaoIguaisComp:
+	li $v0, 0			#$v0 = 0
+	jr $ra				#retorna
+
+stringIguaisComp:
+	li $v0, 1			#$v0 = 1
+	jr $ra				#retorna
+
+adicionarMorador:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal		#volta
+
+removerMorador:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+adicionarAuto:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+removerAuto:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+limparApartamento:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+infoApartamento:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+infoGeral:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+salvarDados:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+recarregarDados:
+	la $a0, option2			#$a0= option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+formatarSistema:
+	la $a0, option2			#$a0 = option2
+	printString			#executa macro
+	quebra_linha			#executa macro
+	j programaPrincipal
+
+
 main:
 	la $a0, escolherOpcao		#$a0 = escolherOpcao
 	printString			#executa macro
@@ -176,7 +418,7 @@ main:
 	move $t0, $v0			#$t0 = $v0
 	
 	li $t1, 1				#$t1 = 1
-	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
+	beq $t0, $t1, infoCadastradaApartamento	#if ($t0 == $t1) -> visualizarInformacoes
 	li $t1, 2				#$t1 = 2
 	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
 	li $t1, 3				#$t1 = 3
