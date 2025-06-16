@@ -366,10 +366,12 @@ removerPessoaApt:
 	
 	li $t2, 0			#$t2 = 0
 	
+	
 	removerPessoaApartamento:
 		li $t3, 320			#$t2 = 320
 		add $a0, $a0, $t2		#$a0 = $a0 + $t2
-	
+		li $t5, 0			#$t5 = 0
+		
 	loopBuscarRemPessoaApt:
 		lb $t0, 0($a0)			#$t0 = $a0[i]
 		lb $t1, 0($a1)			#$t1 = $a1[i]
@@ -379,6 +381,7 @@ removerPessoaApt:
 		
 		addi $a0, $a0, 1		#$a0 = $a0 + 1
 		addi $a1, $a1, 1		#$a1 = $a1 + 1
+		addi $t5, $t5, 1		#$t5 = $t5 + 1
 		
 		j loopBuscarRemPessoaApt	#volta loop
 	
@@ -387,6 +390,8 @@ removerPessoaApt:
 nomesDiferentesRem:
 	beq $t2, $t3, pessoaNaoExisteRem	#if ($t2 == $t3) -> pessoaNaoExisteRem
 
+	sub $a0, $a0, $t5	#$a0 = $a0 - $t5
+	sub $a1, $a1, $t5	#$a1 = $a1 - $t5
 	addi $t2, $t2, 64	#$t2 = $t2 + 64
 	j removerPessoaApartamento
 
