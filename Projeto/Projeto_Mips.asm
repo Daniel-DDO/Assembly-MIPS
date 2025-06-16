@@ -728,6 +728,203 @@ apartamentoNaoPodeTerCarro:
 	quebra_linha			#executa macro
 	j main
 
+removerVeiculoApt:
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+	
+	readInt				#executa macro
+	add $t3, $0, $v0		#$t3 = $0 + $v0
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+
+	bltz $t4, removerVeiculoApt	#se $t4 < 0, volta para o loop
+	
+	la $a0, digiteModeloMoto	#$a0 = digiteModeloMoto
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, modeloVeiculo		#modeloVeiculo = $a0
+	la $a1, 32			#$a1 = 32
+	syscall				#executa leitura
+	
+	
+	la $a0, digiteCorMoto	#$a0 = digiteCorMoto
+	printString			#executa macro
+	
+	li $v0, 8			#chama serviço de ler string
+	la $a0, corVeiculo		#corVeiculo = $a0
+	la $a1, 16			#$a1 = 16
+	syscall				#executa leitura
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+	printInt
+	quebra_linha
+	addi $t4, $t4, 332		#$t4 = $t4 + 332, aonde começa os modelos dos veículos
+	addi $t5, $t4, 64		#$t5 = $t4 + 64 (onde as cores começam)
+	
+	la $a0, apartamentos		#$a0 = apartamentos
+	la $a1, modeloVeiculo		#$a1 = modeloVeiculo
+	la $a2, corVeiculo		#$a2 = corVeiculo
+	
+	add $a3, $a0, $t5		#$a3 = $a0 + $t5
+	add $a0, $a0, $t4		#$a0 = $a0 + $t4
+	
+	li $t2, 0			#$t2 = 0
+	li $t7, 0			#$t7 = 0
+	li $t3, 64			#$t3 = 64 (Espaço ocupado por todos os modelos)
+	
+	removerModeloApartamento:
+		add $a0, $a0, $t2		#$a0 = $a0 + $t2
+		printInt
+	quebra_linha
+		li $t6, 0			#t6 = 0
+	
+	loopBuscarRemModeloApt:
+		lb $t0, 0($a0)			#$t0 = $a0[i]
+		lb $t1, 0($a1)			#$t1 = $a1[i]
+		
+		bne $t0, $t1, veiculosDiferentesRem	#if ($t0 != $t1) -> ModelosDiferentesRem
+		beq $t0, $0, modelosIguaisRem		#if ($t0 == \0) -> modelosIguaisRem
+		
+		addi $t6, $t6, 1		#$t6 = $t6 + 1
+		addi $a0, $a0, 1		#$a0 = $a0 + 1
+		addi $a1, $a1, 1		#$a1 = $a1 + 1
+		
+		j loopBuscarRemModeloApt	#volta loop
+	
+veiculosDiferentesRem:
+	beq $t2, $t3, veiculoNaoExisteRem	#if ($t2 == $t3) -> veiculoNaoExisteRem
+
+	addi $t2, $t2, 32			#$t2 = $t2 + 32
+	add $t9, $a0, $0
+	move $a0, $t2
+	printInt
+	quebra_linha
+	move $a0, $t9
+	addi $t7, $t7, 1			#$t7 = $t7 + 1
+	sub $a0, $a0, $t6			#$a0 = $a0 - $t5
+	sub $a1, $a1, $t6			#$a1 = $a1 - $t5
+	j removerModeloApartamento
+	
+modelosIguaisRem:
+	sub $a0, $a0, $t6			#$a0 = $a0 - $t5
+	sub $a1, $a1, $t6			#$a1 = $a1 - $t5	
+	mul $t7, $t7, 16			#$t7 = $t7 * 16
+	add $a3, $a3, $t7
+	li $t6, 0				#$t6 = 0
+	
+	loopBuscarRemCorApt:
+	lb $t0, 0($a3)				#$t0 = $a3[i]
+	lb $t1, 0($a2)				#$t1 = $a2[i]
+	
+	bne $t0, $t1, coresDiferentesRem		#if ($t0 != $t1) -> coresDiferentesRem
+	beq $t0, $0, veiculosIguaisRem			#if ($t0 == \0) -> veiculosIguaisRem
+	
+	addi $t6, $t6, 1		#$t6 = $t6 + 1
+	addi $a2, $a2, 1		#$a2 = $a2 + 1
+	addi $a3, $a3, 1		#$a3 = $a3 + 1
+	
+	j loopBuscarRemCorApt
+	
+	coresDiferentesRem:
+	sub $a2, $a2, $t6			#$a0 = $a0 - $t5
+	sub $a3, $a3, $t6			#$a1 = $a1 - $t5
+	li $t7, 0				#$t7 = 0
+	j veiculosDiferentesRem
+
+	
+veiculosIguaisRem:
+		la $a0, apartamentos		#$a0 = apartamentos
+		lw $t1, indiceApartamento	#$t1 = indiceApartamento
+		add $a0, $a0, $t1		#$a0 = $a0 + $t1
+		lw $s0, 328($a0)		#$s0 = $a0[328] (inteiroVeiculo)
+		li $t0, 2				#$t0 = 2
+		bne $s0, $t0, limparBytesVeiculo	#Checa se há 2 motos
+		bnez $t2, limparBytesVeiculo	#Checa se a moto excluida foi a segunda
+		li $t2, 32
+		li $t7, 16
+		addi $t0, $a0, 332			#$t0 = $a0 + 332 (Modelo posição 1)
+		addi $t1, $a0, 364			#$t1 = $a0 + 364 (Modelo posição 2)
+		li $t6, 0				#$t2 = 0
+		li $s0, 32				#$s0 = 32
+		
+	moverModeloVeiculoPosRem:
+		beq $t6, $s0, limparBytesVeiculo	#if ($t6 == $t7) -> limparBytesVeiculoVeiculo
+
+    		lb $t8, 0($t1)		#$t8 = $t1[i]
+    		sb $t8, 0($t0)		#$t0[i] = $t8
+
+    		addi $t0, $t0, 1	#$t0 = $t0 + 1
+    		addi $t1, $t1, 1	#$t1 = $t1 + 1
+    		addi $t6, $t6, 1	#$t6 = $t6 + 1
+
+	j moverModeloVeiculoPosRem
+
+	moverCorVeiculoPosRem:
+		beq $s0, $t7, limparBytesVeiculo	#Continua após mover cor
+		li $t6, 0				#$t6 = 0
+		li $s0, 16				#$s0 = 16 (Espaço cor)
+		addi $t0, $t0, 64			#$t0 = $t0 + 64 (Cor posição 1)
+		addi $t1, $t1, 48			#$t1 = $t1 + 48 (Cor posição 2)
+		j moverModeloVeiculoPosRem
+		
+	limparBytesVeiculo:
+	quebra_linha			#executa macro
+	la $a0, apartamentos		#$a0 = apartamentos
+	lw $t1, indiceApartamento	#$t1 = indiceApartamento
+	add $a0, $a0, $t1		#$a0 = $a0 + $t1
+	addi $t0, $a0, 332		#$t0 = $a0 + 332 
+	add $t0, $t0, $t2		#$t0 = $t0 + $t2 (Posição modelo)
+	addi $t1, $a0, 396		#$t1 = $a0 + 396
+	add $t1, $t1, $t7		#$t1 = $t1 + $t7 (Posição cor)
+	li $t6, 0			#$t6 = 0
+	li $t7, 32			#$t7 = 32
+	
+	loopLimparBytesVeiculo:
+		beq $t6, $t7, byteRemovidoSuc 	#if ($t6 == $t7) -> pessoaRemovidaSuc
+	
+		sb $0, 0($t0)		#$t0[i] = 0 (limpeza)
+		
+    		addi $t0, $t0, 1	#$t0 = $t0 + 1
+		addi $t6, $t6, 1	#$t6 = $t6 + 1
+		
+	j loopLimparBytesVeiculo
+	
+	byteRemovidoSuc:
+	beq $t7, 16, corRemovidaSuc
+		li $t6, 0			#$t6 = 0
+		li $t7, 16			#$t7 = 16
+		move $t0, $t1			#$t0 = $t1
+		j loopLimparBytesVeiculo
+	
+	corRemovidaSuc:
+	lw $s0, 328($a0)		#$s0 = $a0[328] (inteiroVeiculo)
+	li $t6, 3			#$t6 = 3
+	bne $s0, $t6, removeMoto	#$identifica se é carro ou moto
+	li $s0, 1
+	removeMoto:
+	subi $s0, $s0, 1		#$s0 = $s0 - 1
+	sw $s0, 328($a0)		#Nomo inteiroVeiculo		
+
+veiculoRemocaoConcluida:
+	la $a0, pessoaExiste	#$a0 = pessoaExiste
+	printString		#executa macro
+	quebra_linha		#executa macro
+	
+	j main			#volta para o main
+	
+veiculoNaoExisteRem:
+	la $a0, pessoaNaoExiste	#$a0 = pessoaNaoExiste
+	printString		#executa macro
+	quebra_linha		#executa macro
+	j main			#volta para o main
+
 
 buscarApartamentoCondominio:
 	la $a0, apartamentos		#$a0 = apartamentos
