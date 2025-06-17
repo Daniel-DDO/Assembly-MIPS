@@ -65,7 +65,7 @@
 	textMotoModelo: .asciiz "Modelo: "
 	textMotoCor: .asciiz "Cor: "
 	
-	#Mensagens e comandosAdd commentMore actions
+	#Mensagens e comandos
 	shellGDA: .asciiz "GDA-shell>>"
 	comandoInvalido: .asciiz "Comando inválido.\n"
 	ad_morador: .asciiz "ad_morador"
@@ -79,12 +79,13 @@
 	recarregar: .asciiz "recarregar"
 	formatar: .asciiz "formatar"
 	exit: .asciiz "exit"
+	argumentoFaltando: .asciiz "Faltam argumentos na execução.\n"
 
 	#Entrada
 	userDigitou: .space 100
 
 	#Argumentos separados
-	option1: .space 20Add commentMore actions
+	option1: .space 20
 	option2: .space 64
 	option3: .space 32
 	option4: .space 16
@@ -196,7 +197,8 @@ somaApt:
 	addi $t1, $t1, 96	#$t1 = $t1 + 96
 	jr $ra			#volta para a função que chamou
 
-programaPrincipal:Add commentMore actions
+
+programaPrincipal:
 iniciarShellPrograma:
 	la $a0, shellGDA	#$a0 = shellGDA
 	printString		#executa macro
@@ -325,7 +327,7 @@ verificarComando:
 	la $a1, option1			#$a1=option1
 	jal compararStrings
 	beq $v0, 1, encerrarPrograma
-
+	
 	la $a0, comandoInvalido		#$a0=comandoInvalido
 	printString			#executa macro
 	j programaPrincipal		#volta pro programaPrincipal
@@ -353,10 +355,25 @@ stringIguaisComp:
 	jr $ra				#retorna
 
 adicionarMorador:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal		#volta
+	la $t9, option3
+	lb $t0, 0($t9)
+	beqz $t0, erroArgumentoFaltando
+
+	la $a0, option2
+	printString		
+	quebra_linha
+
+	jal stringParaInt
+	move $t0, $v0
+	move $a0, $t0
+	printInt
+	quebra_linha
+
+	la $a0, option3      
+	printString
+
+    j programaPrincipal
+
 
 removerMorador:
 	la $a0, option2			#$a0 = option2
@@ -411,7 +428,6 @@ formatarSistema:
 	printString			#executa macro
 	quebra_linha			#executa macro
 	j programaPrincipal
-Add commentMore actions
 
 
 main:
@@ -439,7 +455,6 @@ main:
 	
 	j main				#volta pro main
 	encerrar			#executa macro
-	
 	
 	
 visualizarInformacoes:
@@ -587,7 +602,6 @@ inserirPessoaApt:
 	sw $t1, 0($a0)			#$a0[] = $t1
 	
 	j main
-
 
 
 removerPessoaApt:
@@ -1337,7 +1351,6 @@ infoCadastradaApartamento:
 		j main
 	
 
-
 verificarInfoApartamentos:
 	la $a1, apartamentos		#$a1 = apartamentos
 	li $t0, 428			#$t0 = 428
@@ -1423,6 +1436,33 @@ voltaMain:
 	j main
 
 
+stringParaInt:
+    li $v0, 0                #inicializa o resultado em 0
+
+loopStringInt:
+    lb $t0, 0($a0)           #$t0 = $a0[i]
+    beqz $t0, fimStringInt   #se for fim da string, encerra
+
+    #Verifica se é um dígito
+    li $t1, 48		# '0'
+    li $t2, 57		# '9'
+    blt $t0, $t1, fimStringInt  #Se < '0', termina
+    bgt $t0, $t2, fimStringInt  #Se > '9', termina
+
+    # Converte ASCII -> inteiro
+    sub $t0, $t0, $t1        #$t0 = char - '0'
+
+    #numero = numero * 10 + digito
+    mul $v0, $v0, 10
+    add $v0, $v0, $t0
+
+    addi $a0, $a0, 1         #Avança para próximo caractere
+    j loopStringInt
+
+fimStringInt:
+    jr $ra                   #Retorna
+
+
 main1:
 	#rascunho
 	la $a0, apartamentos
@@ -1439,7 +1479,15 @@ main1:
 	j main
 	encerrar
 	
+
+erroArgumentoFaltando:
+	la $a0, argumentoFaltando
+	printString
+	j programaPrincipal
+
 encerrarPrograma:
 	la $a0, encerrandoPr		#$a0 = encerrandoPr
 	printString			#executa macro
 	encerrar			#executa macro
+
+	
