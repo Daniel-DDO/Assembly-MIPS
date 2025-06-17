@@ -17,6 +17,7 @@
 	modeloVeiculo: .space 32
 	corVeiculo: .space 16
 	barraN: .asciiz "\n"
+	tab: .asciiz "	"
 	
 	digiteNomePessoaApt: .asciiz " - Digite o nome da pessoa (até 64 caracteres): "
 	
@@ -76,16 +77,17 @@
 	#Textos
 	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Limpar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n7. Info_geral\n8. Salvar\n9. Recarregar\n10. Formatar\n11. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
+	qtdAP: .asciiz "Você quer visualizar as informações de apenas um ou de todos os apartamentos?\n1. Um\n2. Todos\n"
 
 	#Informações dos apartamentos
 	textApt: .asciiz "-----------------\nApartamento: "
+	textAP: .asciiz "AP: "
 	textMoradores: .asciiz "Moradores: "
 	textNaoTemMoradores: .asciiz "Não há moradores neste apartamento. "
 	textCarro: .asciiz "Carro: "
-	textCarroCor: .asciiz "Cor: "
 	textMoto: .asciiz "Motos: "
-	textMotoModelo: .asciiz "Modelo: "
-	textMotoCor: .asciiz "Cor: "
+	textModeloVeiculo: .asciiz "Modelo: "
+	textCorVeiculo: .asciiz "Cor: "
 	
 	#Mensagens e comandos
 	shellGDA: .asciiz "GDA-shell>>"
@@ -139,6 +141,12 @@
 
 .macro quebra_linha
 	la $a0, barraN	#$a0 = barraN
+	li $v0, 4	#chama a impressão
+	syscall		#executa a linha anterior
+.end_macro
+
+.macro tab
+	la $a0, tab	#$a0 = barraN
 	li $v0, 4	#chama a impressão
 	syscall		#executa a linha anterior
 .end_macro
@@ -1762,35 +1770,43 @@ buscarApartamentoCondominio:
 	
 	
 infoCadastradaApartamento:
+	li $s1, 0			#$s1 = 0
+	li $t3, 101			#$t3 = 101
 	quebra_linha			#executa macro
+	la $a0, qtdAP		#$a0 = qtdAp
+	printString			#executa macro
+	quebra_linha			#executa macro
+	readInt				#executa macro
+	add $s0, $0, $v0		#$s0 = $0 + $v0
+	li $t0, 2			#$v0 = 2
+	quebra_linha			#executa macro
+	beq $s0, $t0, iniciarTodosAPs
+	
 	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
 	printString			#executa macro
-	
-	readInt				#executa macro
+	readInt				#executa macro:
 	add $t3, $0, $v0		#$t3 = $0 + $v0
-	
+	iniciarTodosAPs:
 	jal buscarApartamentoCondominio	#faz a busca
 	
 	move $a0, $t3			#$a0 = $t3
-	printInt			#executa macro
 	
 	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
 	quebra_linha			#executa macro
-	
 	la $a1, apartamentos		#$a1 = apartamentos
-	add $a1, $a1, $t4
+	add $a1, $a1, $t4		#$a1 = $a1 + $t4
+	todosAPs:
 	li $t2, 64			#$t2 = 64
 	
 	loopVerificarInfoApartamento:
-		la $a0, textApt		#$a0 = textApt
+		la $a0, textAP		#$a0 = textAP
 		printString		#executa macro
-		lw $t4, 0($a1)		#$t4 = $a1[0]
-		add $a0, $t4, $0	#$a0 = $t4
+		lw $a0,	0($a1)		#$a0 = $a1[0] (Nº AP)
 		printInt		#executa macro
-		quebra_linha		#executa macro
 		quebra_linha		#executa macro
 		
 		lw $t4, 4($a1)		#$t4 = $a1[4]
+		addi $a1, $a1, 8	#$a1 = $a1 + 8
 		beq $t4, 0, naoHaMoradoresApartamento	#if ($t4 == 0) -> naoHaMoradoresApt
 		bne $t4, 0, temMoradoresApartamento	#if ($t4 != 0) -> temMoradoresApt
 		
@@ -1798,22 +1814,20 @@ infoCadastradaApartamento:
 			la $a0, textNaoTemMoradores
 			printString		#executa macro
 			quebra_linha		#executa macro
-			addi $a1, $a1, 328	#$a1 = $a1 + 328
 			j verificarVeiculosApartamento	#vai para verificarVeiculosApt
 		
 		temMoradoresApartamento:
 		la $a0, textMoradores	#$a0 = textMoradores
 		printString		#executa macro
 		quebra_linha		#executa macro
-		addi $a1, $a1, 8	#$a1 = $a1 + 8
-
+		tab			#executa macro
 		li $t3, 0		#$t3 = 0 (iterador)
 		la $t5, nomePessoa	#$t5 = nomePessoa
 		li $t6, 0		#$t6 = 0 (contador de pessoas (1, 2, .. 5)
 		
 		loopNomeMoradorApartamento:
-			lb $t4, 0($a1)		#$t4 = $a1[i]
-			sb $t4, 0($t5)		#$t5[i] = $t4
+			lb $t0, 0($a1)		#$t0 = $a1[i]
+			sb $t0, 0($t5)		#$t5[i] = $t0
 			
 			beq $t3, $t2, proximoMoradorApartamento	#if ($t3 == $t2) -> proximoMorador
 			
@@ -1827,29 +1841,141 @@ infoCadastradaApartamento:
 			addi $t6, $t6, 1	#$t6 = $t6 + 1
 			la $a0, nomePessoa	#$a0 = nomePessoa
 			printString		#executa macro
-		
 			la $t5, nomePessoa
-			sub $a1, $a1, $t3	#$a1 = $a1 - $t3
 			add $t3, $0, $0		#$t3 = 0
-			addi $a1, $a1, 64	#$a1 = $a1 + 64
-
-			beq $t6, 5, verificarVeiculosApartamento	#if($t6 == 5) -> verificarVeiculosApt
+			beq $t6, $t4, verificarVeiculosApartamento	#if($t6 == $t4) -> verificarVeiculosApt
+			tab			#executa macro
 			j loopNomeMoradorApartamento	#volta loopNomeMorador
 		
 		
 	verificarVeiculosApartamento:
-		lw $t3, 0($a1)		#se (0 - nada; 1 - uma moto; 2 - duas motos; 3 - um carro)
+		li $t5, 5			#$t5 = 5
+		sub $t5, $t5, $t4		#$t5 = $t5 - $t4
+		mul $t5, $t5, 64		#$t5 = $t5 * 64
+		add $a1, $a1, $t5		#$a1 = $a1 + $t5
+		quebra_linha			#executa macro
+
 		
-		li $t4, 0	#$t4 = 0
-		beq $t3, $t4, naoExisteVeiculoApartamento	#if ($t3 == $t4) -> naoExisteVeiculoApt	
+		
+		lw $t3, 0($a1)			#se (0 - nada; 1 - uma moto; 2 - duas motos; 3 - um carro)
+		li $t4, 0			#$t4 = 0
+		beq $t3, $t4, naoExisteVeiculoApartamento	#if ($t3 == $t4) -> naoExisteVeiculoApt
+		addi $a1, $a1, 4		#$a1 = $a1 + 4
+		j imprimirVeiculoApt
+		
 		
 	
 	naoExisteVeiculoApartamento:
 		addi $a1, $a1, 100		#$a1 = $a1 + 100
 		j verificarFinalApartamento	#vai para verificarFinalApt
 	
+	imprimirVeiculoApt:
+		li $t2, 32		#$t2 = 32
+		li $t4, 0		#$t3 = 0 (iterador)
+		la $t5, modeloVeiculo	#$t5 = modeloVeiculo
+		li $t6, 0		#$t6 = 0 (contador de pessoas (1, 2, .. 5)
+		
+		loopImprimirVeiculoApt:
+			beq $t4, $t2, continuaLoopImprimirVeiculo	#if ($t3 == $t2) -> proximoMorador
+			lb $t0, 0($a1)		#$t0 = $a1[i]
+			sb $t0, 0($t5)		#$t5[i] = $t0
+			
+			addi $a1, $a1, 1	#$a1 = $a1 + 1
+			addi $t4, $t4, 1	#$t3 = $t3 + 1
+			addi $t5, $t5, 1	#$t5 = $t5 + 1
+			
+			j loopImprimirVeiculoApt	#loopImprimirVeiculoApt
+			
+		continuaLoopImprimirVeiculo:
+		li $t4, 32			#$t3 = 32
+		bne $t2, $t4, concluiLoopImprimirVeiculo		#if ($t2 != $t3) -> concluiLoopImprimirVeiculo
+		li $t2, 16			#$t2 = 16
+		li $t4, 0			#$t3 = 0
+		la $t5, corVeiculo		#$t5 = corVeiculo
+		addi $a1, $a1, 32		#$a1 = $a1 + 32
+		j loopImprimirVeiculoApt
+		
+		concluiLoopImprimirVeiculo:
+		li $t4, 3			#$t4 = 3
+		beq $t3, $t4, imprimeCarro	#Identifica se é carro
+		la $a0, textMoto		#$a0 = textMoto
+		j continuaImprimirVeiculo
+		imprimeCarro:
+		la $a0, textCarro		#$a0 = textCarro
+		j continuaImprimirVeiculo
+		continuaImprimirVeiculo:
+		printString			#executa macro
+		quebra_linha			#executa macro
+		tab				#executa macro
+		la $a0, textModeloVeiculo	#$a0 = textModeloVeiculo
+		printString			#executa macro
+		la $a0, modeloVeiculo		#$a0 = $a1[0] Modelo carro
+		printString			#executa macro
+		tab				#executa macro
+		la $a0, textCorVeiculo		#$a0 = textCorVeiculo
+		printString			#executa macro
+		la $a0,corVeiculo		#$a0 = corVeiculo
+		printString			#executa macro
+		quebra_linha			#executa macro
+		li $t4, 2			#$t4 = 2
+		beq $t3, $t4, imprimirMotoApt
+		addi $a1, $a1, 16		#$a1 = $a1 + 96
+		j verificarFinalApartamento	#vai para verificarFinalApt
+		
+	imprimirMotoApt:
+		subi $a1, $a1, 48
+		li $t2, 32		#$t2 = 32
+		li $t4, 0		#$t3 = 0 (iterador)
+		la $t5, modeloVeiculo	#$t5 = modeloVeiculo
+		li $t6, 0		#$t6 = 0 (contador de pessoas (1, 2, .. 5)
+		
+		loopImprimirMotoApt:
+			beq $t4, $t2, continuaLoopImprimirMoto	#if ($t3 == $t2) -> proximoMorador
+			
+			lb $t0, 0($a1)		#$t0 = $a1[i]
+			sb $t0, 0($t5)		#$t5[i] = $t0
+			
+			
+			addi $a1, $a1, 1	#$a1 = $a1 + 1
+			addi $t4, $t4, 1	#$t3 = $t3 + 1
+			addi $t5, $t5, 1	#$t5 = $t5 + 1
+			
+			j loopImprimirMotoApt	#loopImprimirCarro
+			
+		continuaLoopImprimirMoto:
+		li $t4, 32			#$t3 = 32
+		bne $t2, $t4, concluiLoopImprimirMoto		#if ($t2 != $t3) -> concluiLoopImprimirCarro
+		li $t2, 16			#$t2 = 16
+		li $t4, 0			#$t3 = 0
+		la $t5, corVeiculo		#$t5 = corVeiculo
+		addi $a1, $a1, 16		#$a1 = $a1 + 16
+		j loopImprimirMotoApt
+		
+		concluiLoopImprimirMoto:
+
+		quebra_linha			#executa macro
+		tab				#executa macro
+		la $a0, textModeloVeiculo	#$a0 = textModeloVeiculo
+		printString			#executa macro
+		la $a0, modeloVeiculo		#$a0 = $a1[0] Modelo carro
+		printString			#executa macro
+		tab				#executa macro
+		la $a0, textCorVeiculo		#$a0 = textCorVeiculo
+		printString			#executa macro
+		la $a0,corVeiculo		#$a0 = corVeiculo
+		printString			#executa macro
+		quebra_linha			#executa macro
+		j verificarFinalApartamento	#vai para verificarFinalApt
+	
 	verificarFinalApartamento:
 		quebra_linha			#executa macro
+		addi $s1, $s1, 1		#$s1 = $s1 + 1
+		li $t0, 2			#$t0 = 2
+		bne $s0, $t0, finalizaVisualizarInformacoes	#checa se foi selecianada a opção "all"
+		li $t0, 40			#$t0 = 40
+		beq $s1, $t0, finalizaVisualizarInformacoes	#checa se já passou pelos 40
+		j todosAPs			#retorna ao loop
+		finalizaVisualizarInformacoes:	#finaliza
 		j main
 	
 
