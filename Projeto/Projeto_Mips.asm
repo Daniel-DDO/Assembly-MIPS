@@ -111,10 +111,12 @@
 	userDigitou: .space 100
 
 	#Argumentos separados
-	option1: .space 20
-	option2: .space 64
-	option3: .space 32
-	option4: .space 16
+	
+	option1: .space 12
+	option2: .space 5
+	option3: .space 64
+	option4: .space 32
+	option5: .space 16
 	
 	
 	# Estrutura do código:
@@ -256,108 +258,128 @@ somaApt:
 
 programaPrincipal:
 iniciarShellPrograma:
-	la $a0, shellGDA	#$a0 = shellGDA
-	printString		#executa macro
+	la $a0, shellGDA
+	printString
 
-	li $v0, 8		#$v0=8
-	la $a0, userDigitou	#$a0=userDigitou
-	li $a1, 100		#$a1=100
-	syscall			#executa syscall (leitura)
+	li $v0, 8
+	la $a0, userDigitou
+	li $a1, 100
+	syscall
 
-	la $a2, userDigitou	#$a2=userDigitou
-	la $t1, option1		#$t1=option1
-	la $t2, option2		#$t2=option2
-	la $t3, option3		#$t3=option3
-	la $t4, option4		#$t4=option4
-	li $t5, 0		#$t5=0
+	la $a2, userDigitou    # Ponteiro para a string completa digitada pelo usuário
+	la $t1, option1        # Ponteiro para o início de option1
+	la $t2, option2        # Ponteiro para o início de option2
+	la $t3, option3        # Ponteiro para o início de option3
+	la $t4, option4        # Ponteiro para o início de option4
+	la $s0, option5        # Ponteiro dedicado para option5
+
+	li $t5, 0              # $t5 = contador de opções (0, 1, 2, 3, 4)
 
 loopEntradaUsuario:
-	lb $t6, 0($a2)		#$t6=char atual
-	beq $t6, $0, finalStringShell	#se fim da string, vai finalizar
+	lb $t6, 0($a2)          # $t6 = char atual
+	beq $t6, $0, finalStringShell # Se fim da string, vai finalizar
 
-	li $t7, 45		#$t7=45 ('-')
-	beq $t6, $t7, proximoOptionShell	#se '-', troca argumento
+	li $t7, 45              # $t7 = 45 ('-')
+	beq $t6, $t7, proximoOptionShell # Se '-', troca argumento
 
-	li $t7, 3		#$t7=3 (limite de '-')
-	bgt $t5, $t7, erroArgumentos	#se mais de 4 args, erro
+	li $t7, 4               # MUDANÇA AQUI: Agora 4, para permitir 5 opções (0 a 4)
+	bgt $t5, $t7, erroArgumentos # Se mais de 5 args, erro (option0 a option4)
 
-	beq $t5, 0, salvarOption1	#se 0, salva no option1
-	beq $t5, 1, salvarOption2	#se 1, salva no option2
-	beq $t5, 2, salvarOption3	#se 2, salva no option3
-	beq $t5, 3, salvarOption4	#se 3, salva no option4
+	beq $t5, 0, salvarOption1
+	beq $t5, 1, salvarOption2
+	beq $t5, 2, salvarOption3
+	beq $t5, 3, salvarOption4
+	beq $t5, 4, salvarOption5 # <--- NOVO: Salva no option5
 
 continuarLoopEntrada:
-	addi $a2, $a2, 1	#$a2++
-	j loopEntradaUsuario	#volta pro loop
+	addi $a2, $a2, 1        # $a2++
+	j loopEntradaUsuario    # Volta pro loop
 
 salvarOption1:
-	sb $t6, 0($t1)			#salva no option1
-	addi $t1, $t1, 1		#$t1++
+	sb $t6, 0($t1)          # Salva no option1
+	addi $t1, $t1, 1        # $t1++
 	j continuarLoopEntrada
 
 salvarOption2:
-	sb $t6, 0($t2)			#salva no option2
-	addi $t2, $t2, 1		#$t2++
+	sb $t6, 0($t2)          # Salva no option2
+	addi $t2, $t2, 1        # $t2++
 	j continuarLoopEntrada
 
 salvarOption3:
-	sb $t6, 0($t3)			#salva no option3
-	addi $t3, $t3, 1		#$t3++
+	sb $t6, 0($t3)          # Salva no option3
+	addi $t3, $t3, 1        # $t3++
 	j continuarLoopEntrada
 
 salvarOption4:
-	sb $t6, 0($t4)			#salva no option4
-	addi $t4, $t4, 1		#$t4++
+	sb $t6, 0($t4)          # Salva no option4
+	addi $t4, $t4, 1        # $t4++
+	j continuarLoopEntrada
+
+salvarOption5:
+	sb $t6, 0($s0)          # <--- NOVO: Salva no option5 (usando $s0)
+	addi $s0, $s0, 1        # <--- NOVO: $s0++
 	j continuarLoopEntrada
 
 proximoOptionShell:
+	# Baseado em qual option estava sendo preenchida ($t5):
+	beq $t5, 0, encerrarOption1
+	beq $t5, 1, encerrarOption2
+	beq $t5, 2, encerrarOption3
+	beq $t5, 3, encerrarOption4
+	beq $t5, 4, encerrarOption5 # <--- NOVO: Se $t5=4 (option5), encerra
 
-    # Baseado em qual option estava sendo preenchida ($t5):
-    beq $t5, 0, encerrarOption1
-    beq $t5, 1, encerrarOption2
-    beq $t5, 2, encerrarOption3
-    beq $t5, 3, encerrarOption4
-    j continueProximoOptionShell # Salta se $t5 > 3 (erro já tratado)
+	j continueProximoOptionShell # Salta se $t5 > 4 (erro já tratado)
 
 encerrarOption1:
-    sb $0, 0($t1) # Coloca null no fim do option1 (onde $t1 parou)
-    j continueProximoOptionShell
+	sb $0, 0($t1) # Coloca null no fim do option1 (onde $t1 parou)
+	j continueProximoOptionShell
 
 encerrarOption2:
-    sb $0, 0($t2) # Coloca null no fim do option2
-    j continueProximoOptionShell
+	sb $0, 0($t2) # Coloca null no fim do option2
+	j continueProximoOptionShell
 
 encerrarOption3:
-    sb $0, 0($t3) # Coloca null  no fim do option3
-    j continueProximoOptionShell
+	sb $0, 0($t3) # Coloca null no fim do option3
+	j continueProximoOptionShell
 
 encerrarOption4:
-    sb $0, 0($t4) # Coloca null no fim do option4
-    j continueProximoOptionShell
+	sb $0, 0($t4) # Coloca null no fim do option4
+	j continueProximoOptionShell
+
+encerrarOption5:
+	sb $0, 0($s0) # <--- NOVO: Coloca null no fim do option5 (usando $s0)
+	j continueProximoOptionShell
 
 continueProximoOptionShell:
-    addi $t5, $t5, 1    # Incrementa o contador de options (passa para a próxima)
-    addi $a2, $a2, 1    # Avança o ponteiro de leitura na string do usuário (pula o '-')
-    j loopEntradaUsuario # Volta pro loop para ler o próximo caractere
+	addi $t5, $t5, 1        # Incrementa o contador de options (passa para a próxima)
+	addi $a2, $a2, 1        # Avança o ponteiro de leitura na string do usuário (pula o '-')
+	j loopEntradaUsuario    # Volta pro loop para ler o próximo caractere
 
 finalStringShell:
+    # REINICIALIZAÇÃO DOS PONTEIROS PARA OS ENDEREÇOS BASE DAS OPTIONS
+    la $t1, option1
+    la $t2, option2
+    la $t3, option3
+    la $t4, option4
+    la $s0, option5        # <--- NOVO: Recarrega $s0 para o início de option5
 
-la $t9, option1
-    li $t0, 0 # Contador
+    # Processar option1 (re-uso de $t9 para varredura e $t0 como contador local)
+    la $t9, option1
+    li $t0, 0 # Contador para o loop atual
     loopLimparOption1:
         lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption1 # Se já é null, termina
+        beq $t8, $0, fimLimparOption1
         li $t7, 10 # ASCII para '\n'
-        beq $t8, $t7, retirarBarraNLinha1 # Se for nova linha, substitui por null
+        beq $t8, $t7, retirarBarraNLinha1
         addi $t9, $t9, 1
         addi $t0, $t0, 1
-        bge $t0, 20, fimLimparOption1 # Evita ler fora do limite de option1 (20 bytes)
+        bge $t0, 12, fimLimparOption1 # <--- AJUSTADO para 12 bytes (option1)
         j loopLimparOption1
     retirarBarraNLinha1:
-        sb $0, 0($t9) # Substitui '\n' por '\0'
+        sb $0, 0($t9)
     fimLimparOption1:
 
-    # Repita para option2
+    # Processar option2
     la $t9, option2
     li $t0, 0
     loopLimparOption2:
@@ -367,13 +389,13 @@ la $t9, option1
         beq $t8, $t7, retirarBarraNLinha2
         addi $t9, $t9, 1
         addi $t0, $t0, 1
-        bge $t0, 64, fimLimparOption2 # Limite de option2 (64 bytes)
+        bge $t0, 5, fimLimparOption2 # <--- AJUSTADO para 5 bytes (option2)
         j loopLimparOption2
     retirarBarraNLinha2:
         sb $0, 0($t9)
     fimLimparOption2:
 
-    # Repita para option3
+    # Processar option3
     la $t9, option3
     li $t0, 0
     loopLimparOption3:
@@ -383,13 +405,13 @@ la $t9, option1
         beq $t8, $t7, retirarBarraNLinha3
         addi $t9, $t9, 1
         addi $t0, $t0, 1
-        bge $t0, 32, fimLimparOption3 # Limite de option3 (32 bytes)
+        bge $t0, 64, fimLimparOption3 # <--- AJUSTADO para 64 bytes (option3)
         j loopLimparOption3
     retirarBarraNLinha3:
         sb $0, 0($t9)
     fimLimparOption3:
 
-    # Repita para option4
+    # Processar option4
     la $t9, option4
     li $t0, 0
     loopLimparOption4:
@@ -399,79 +421,29 @@ la $t9, option1
         beq $t8, $t7, retirarBarraNLinha4
         addi $t9, $t9, 1
         addi $t0, $t0, 1
-        bge $t0, 16, fimLimparOption4 # Limite de option4 (16 bytes)
+        bge $t0, 32, fimLimparOption4 # <--- AJUSTADO para 32 bytes (option4)
         j loopLimparOption4
     retirarBarraNLinha4:
         sb $0, 0($t9)
     fimLimparOption4:
 
-    la $t1, option1
-    la $t2, option2
-    la $t3, option3
-    la $t4, option4
-    
-    # Processar option1
-    li $t5, 0 # Contador de caracteres
-    loopFinalizarLinha1:
-        lb $t6, 0($t1)
-        beq $t6, $0, fimFinalizarLinha1 # Fim da string
-        li $t7, 10 # ASCII do newline
-        beq $t6, $t7, substituirEFinalizarLinha1 # Encontrou newline, substitui e termina
-        addi $t1, $t1, 1
-        addi $t5, $t5, 1
-        bge $t5, 20, fimFinalizarLinha1 # Prevenção de overflow para o buffer
-        j loopFinalizarLinha1
-    substituirEFinalizarLinha1:
-        sb $0, 0($t1) # Substitui '\n' por '\0'
-    fimFinalizarLinha1:
-    
-    # Processar option2
-    li $t5, 0
-    loopFinalizarLinha2:
-        lb $t6, 0($t2)
-        beq $t6, $0, fimFinalizarLinha2
+    # NOVO: Processar option5
+    la $t9, option5 # <--- $t9 é reutilizado para varrer option5
+    li $t0, 0 # $t0 é reutilizado como contador de loop local
+    loopLimparOption5:
+        lb $t8, 0($t9)
+        beq $t8, $0, fimLimparOption5
         li $t7, 10
-        beq $t6, $t7, substituirEFinalizarLinha2
-        addi $t2, $t2, 1
-        addi $t5, $t5, 1
-        bge $t5, 64, fimFinalizarLinha2
-        j loopFinalizarLinha2
-    substituirEFinalizarLinha2:
-        sb $0, 0($t2)
-    fimFinalizarLinha2:
-    
-    # Processar option3
-    li $t5, 0
-    loopFinalizarLinha3:
-        lb $t6, 0($t3)
-        beq $t6, $0, fimFinalizarLinha3
-        li $t7, 10
-        beq $t6, $t7, substituirEFinalizarLinha3
-        addi $t3, $t3, 1
-        addi $t5, $t5, 1
-        bge $t5, 32, fimFinalizarLinha3
-        j loopFinalizarLinha3
-    substituirEFinalizarLinha3:
-        sb $0, 0($t3)
-    fimFinalizarLinha3:
+        beq $t8, $t7, retirarBarraNLinha5
+        addi $t9, $t9, 1
+        addi $t0, $t0, 1
+        bge $t0, 16, fimLimparOption5 # <--- AJUSTADO para 16 bytes (option5)
+        j loopLimparOption5
+    retirarBarraNLinha5:
+        sb $0, 0($t9)
+    fimLimparOption5:
 
-    # Processar option4
-    li $t5, 0
-    loopFinalizarLinha4:
-        lb $t6, 0($t4)
-        beq $t6, $0, fimFinalizarLinha4
-        li $t7, 10
-        beq $t6, $t7, substituirEFinalizarLinha4
-        addi $t4, $t4, 1
-        addi $t5, $t5, 1
-        bge $t5, 16, fimFinalizarLinha4
-        j loopFinalizarLinha4
-    substituirEFinalizarLinha4:
-        sb $0, 0($t4)
-        
-    fimFinalizarLinha4:
-
-    j verificarComando      # Vai verificar o comando
+    j verificarComando
 
 erroArgumentos:
 	la $a0, comandoInvalido		#$a0=comandoInvalido
@@ -2062,4 +2034,3 @@ verificarInfoApartamentos:
 	
 voltaMain:
 	j main
-	
