@@ -32,6 +32,7 @@
 	aptosVazios: .asciiz "Vazios:       "
 	aptosVaziosOuNaoP1: .asciiz " ("
 	aptosVaziosOuNaoP2: .asciiz "%)"
+	msgAptoLimpo: .asciiz "Os dados do apartamento foram limpos com sucesso!"
 	
 	#Pessoas
 	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
@@ -73,7 +74,7 @@
     	msgDadosFormatados: .asciiz "Todos os apartamentos foram formatados!"
 	
 	#Textos
-	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n7. Info_geral\n8. Salvar\n9. Recarregar\n10. Formatar\n11. Encerrar\n"
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Limpar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n7. Info_geral\n8. Salvar\n9. Recarregar\n10. Formatar\n11. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
 
 	#Informações dos apartamentos
@@ -101,6 +102,7 @@
 	formatar: .asciiz "formatar"
 	exit: .asciiz "exit"
 	argumentoFaltando: .asciiz "Faltam argumentos na execução.\n"
+	
 
 	#Entrada
 	userDigitou: .space 100
@@ -485,7 +487,7 @@ main:
 	li $t1, 1				#$t1 = 1
 	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
 	li $t1, 2				#$t1 = 2
-	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
+	beq $t0, $t1, limparApto		#if ($t0 == $t1) -> limparApto
 	li $t1, 3				#$t1 = 3
 	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
 	li $t1, 4				#$t1 = 4
@@ -505,6 +507,8 @@ main:
 	li $t1, 11				#$t1 = 11
 	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
+	la $a0, comandoInvalido
+	printString
 	
 	j main				#volta pro main
 	encerrar			#executa macro
@@ -1271,6 +1275,64 @@ veiculoNaoExisteRem:
 	printString		#executa macro
 	quebra_linha		#executa macro
 	j main			#volta para o main
+	
+	
+	
+	
+limparApto:
+
+	quebra_linha			#executa macro
+	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
+	printString			#executa macro
+	
+	readInt				#executa macro
+	add $t3, $0, $v0		#$t3 = $0 + $v0
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	quebra_linha			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+
+	bltz $t4, limparApto	#se $t4 < 0, volta para o loop
+	
+	quebra_linha		#executa macro
+
+    	la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
+    	addi $t2, $t2, 4	    #$t3 = $t2 + 4 (endereço da quantidade de pessoas do apto)
+    	
+    	la $t3, apartamentos        # Endereço destino: apartamentos
+    	add $t3, $t3, $t4	    #$t3 = $t3 + $t4  (endereço do apto)
+    	addi $t3, $t3, 4	    #$t3 = $t3 + 4 (endereço da quantidade de pessoas do apto)
+    	
+    	li $t0, 0                   # Contador de bytes
+   	li $t1, 424                 # Total de bytes a copiar (mesmo tamanho da área)
+
+	loopLimpaApartamentos:
+	
+   	 beq $t0, $t1, fimLimparApto # Se copiamos todos os bytes, termine
+
+    	 lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
+   	 sb $t4, 0($t3)              # Salva o byte em apartamentos
+
+    	 addi $t2, $t2, 1            # Avança no endereço fonte
+   	 addi $t3, $t3, 1            # Avança no endereço destino
+   	 addi $t0, $t0, 1            # Incrementa o contador de bytes
+
+    	j loopLimpaApartamentos
+
+	fimLimparApto:
+
+    	la $a0, msgAptoLimpo
+    	printString
+    	quebra_linha
+    	quebra_linha
+
+   	 j main                      # Retorna ao menu principal
+	
+	
 
 
 buscarApartamentoCondominio:
