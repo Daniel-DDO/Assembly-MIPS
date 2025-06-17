@@ -42,13 +42,17 @@
 	tipoVeiculoInvalido: .asciiz "Tipo de veículo inválido"
 	aptoNaoPodeTerCarro: .asciiz "Esse apartamento não pode ter carro"
 
-	#Moto
+	#Moto/Veiculo
 	digiteModeloMoto: .asciiz "Digite o modelo da moto (até 32 caracteres): "
 	digiteCorMoto: .asciiz "Digite a cor da moto (até 16 caracteres): "
 	motoAdicionadaSucesso: .asciiz "Moto adicionada com sucesso!"
+	digiteModeloVeiculo: .asciiz "Digite o modelo do veiculo (até 32 caracteres): "
+	digiteCorVeiculo: .asciiz "Digite a cor do veiculo (até 16 caracteres): "
+	veiculoNaoExiste: .asciiz "Veiculo não encontrado."
+	veiculoRemovido: .asciiz "Veiculo encontrado e removido com sucesso!"
 	
 	#Textos
-	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n6. Remover pessoa\n7. Remover carro\n8. Remover moto\n10. Encerrar\n"
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n10. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
 
 	#Informações dos apartamentos
@@ -60,31 +64,6 @@
 	textMoto: .asciiz "Motos: "
 	textMotoModelo: .asciiz "Modelo: "
 	textMotoCor: .asciiz "Cor: "
-	
-	
-	#Mensagens e comandos
-	shellGDA: .asciiz "GDA-shell>>"
-	comandoInvalido: .asciiz "Comando inválido.\n"
-	ad_morador: .asciiz "ad_morador"
-	rm_morador: .asciiz "rm_morador"
-	ad_auto: .asciiz "ad_auto"
-	rm_auto: .asciiz "rm_auto"
-	limpar_ap: .asciiz "limpar_ap"
-	info_ap: .asciiz "info_ap"
-	info_geral: .asciiz "info_geral"
-	salvar: .asciiz "salvar"
-	recarregar: .asciiz "recarregar"
-	formatar: .asciiz "formatar"
-	exit: .asciiz "exit"
-
-	#Entrada
-	userDigitou: .space 100
-
-	#Argumentos separados
-	option1: .space 20
-	option2: .space 64
-	option3: .space 32
-	option4: .space 16
 	
 	# Estrutura do código:
 
@@ -180,7 +159,7 @@ inicializarQtdPessoasApt:
 	loopInicializarQtdPessoasApt:
 		sw $t2, 4($a0)		#$a0[4] = $t2
 		
-		beq $t0, $t1, programaPrincipal	#if ($t0 == $t1) -> main
+		beq $t0, $t1, main	#if ($t0 == $t1) -> main
 		
 		addi $t0, $t0, 1	#$t0 = $t0 + 1
 		addi $a0, $a0, 428	#$a0 = $a0 + 428
@@ -191,223 +170,6 @@ inicializarQtdPessoasApt:
 somaApt:
 	addi $t1, $t1, 96	#$t1 = $t1 + 96
 	jr $ra			#volta para a função que chamou
-
-
-programaPrincipal:
-iniciarShellPrograma:
-	la $a0, shellGDA	#$a0 = shellGDA
-	printString		#executa macro
-
-	li $v0, 8		#$v0=8
-	la $a0, userDigitou	#$a0=userDigitou
-	li $a1, 100		#$a1=100
-	syscall			#executa syscall (leitura)
-
-	la $a2, userDigitou	#$a2=userDigitou
-	la $t1, option1		#$t1=option1
-	la $t2, option2		#$t2=option2
-	la $t3, option3		#$t3=option3
-	la $t4, option4		#$t4=option4
-	li $t5, 0		#$t5=0
-
-loopEntradaUsuario:
-	lb $t6, 0($a2)		#$t6=char atual
-	beq $t6, $0, finalStringShell	#se fim da string, vai finalizar
-
-	li $t7, 45		#$t7=45 ('-')
-	beq $t6, $t7, proximoOptionShell	#se '-', troca argumento
-
-	li $t7, 3		#$t7=3 (limite de '-')
-	bgt $t5, $t7, erroArgumentos	#se mais de 4 args, erro
-
-	beq $t5, 0, salvarOption1	#se 0, salva no option1
-	beq $t5, 1, salvarOption2	#se 1, salva no option2
-	beq $t5, 2, salvarOption3	#se 2, salva no option3
-	beq $t5, 3, salvarOption4	#se 3, salva no option4
-
-continuarLoopEntrada:
-	addi $a2, $a2, 1	#$a2++
-	j loopEntradaUsuario	#volta pro loop
-
-salvarOption1:
-	sb $t6, 0($t1)			#salva no option1
-	addi $t1, $t1, 1		#$t1++
-	j continuarLoopEntrada
-
-salvarOption2:
-	sb $t6, 0($t2)			#salva no option2
-	addi $t2, $t2, 1		#$t2++
-	j continuarLoopEntrada
-
-salvarOption3:
-	sb $t6, 0($t3)			#salva no option3
-	addi $t3, $t3, 1		#$t3++
-	j continuarLoopEntrada
-
-salvarOption4:
-	sb $t6, 0($t4)			#salva no option4
-	addi $t4, $t4, 1		#$t4++
-	j continuarLoopEntrada
-
-proximoOptionShell:
-	addi $t5, $t5, 1		#$t5++
-	addi $a2, $a2, 1		#$a2++
-	j loopEntradaUsuario
-
-finalStringShell:
-	sb $0, 0($t1)			#termina option1
-	sb $0, 0($t2)			#termina option2
-	sb $0, 0($t3)			#termina option3
-	sb $0, 0($t4)			#termina option4
-
-	j verificarComando		#vai verificar comando
-
-erroArgumentos:
-	la $a0, comandoInvalido		#$a0=comandoInvalido
-	printString			#executa macro
-	j programaPrincipal		#volta pro programaPrincipal
-
-verificarComando:
-	la $a0, ad_morador		#$a0 = ad_morador
-	la $a1, option1			#$a1 = option1
-	jal compararStrings		#chama comparar
-	beq $v0, 1, adicionarMorador	#se igual, vai
-
-	la $a0, rm_morador		#$a0=rm_morador
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, removerMorador
-
-	la $a0, ad_auto			#$a0=ad_auto
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, adicionarAuto
-
-	la $a0, rm_auto			#$a0=rm_auto
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, removerAuto
-
-	la $a0, limpar_ap		#$a0=limpar_ap
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, limparApartamento
-
-	la $a0, info_ap			#$a0=info_ap
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, infoApartamento
-
-	la $a0, info_geral		#$a0=info_geral
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, infoGeral
-
-	la $a0, salvar			#$a0=salvar
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, salvarDados
-
-	la $a0, recarregar		#$a0=recarregar
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, recarregarDados
-
-	la $a0, formatar		#$a0=formatar
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, formatarSistema
-
-	la $a0, exit			#$a0=exit
-	la $a1, option1			#$a1=option1
-	jal compararStrings
-	beq $v0, 1, encerrarPrograma
-
-	la $a0, comandoInvalido		#$a0=comandoInvalido
-	printString			#executa macro
-	j programaPrincipal		#volta pro programaPrincipal
-
-compararStrings:
-	li $v0, 1			#$v0=1 (assume igual)
-
-loopComparandoString:
-	lb $t7, 0($a0)			#$t7=char string1
-	lb $t8, 0($a1)			#$t8=char string2
-
-	bne $t7, $t8, stringNaoIguaisComp	#se diferente, não iguais
-	beq $t7, $0, stringIguaisComp	#se fim, são iguais
-
-	addi $a0, $a0, 1		#$a0++
-	addi $a1, $a1, 1		#$a1++
-	j loopComparandoString
-
-stringNaoIguaisComp:
-	li $v0, 0			#$v0 = 0
-	jr $ra				#retorna
-
-stringIguaisComp:
-	li $v0, 1			#$v0 = 1
-	jr $ra				#retorna
-
-adicionarMorador:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal		#volta
-
-removerMorador:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-adicionarAuto:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-removerAuto:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-limparApartamento:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-infoApartamento:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-infoGeral:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-salvarDados:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-recarregarDados:
-	la $a0, option2			#$a0= option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
-
-formatarSistema:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
 
 
 main:
@@ -425,8 +187,10 @@ main:
 	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
 	li $t1, 4				#$t1 = 4
 	beq $t0, $t1, adicionarAutomovel	#if ($t0 == $t1) -> adicionarAutomovel
-	li $t1, 6				#$t1 = 6
+	li $t1, 5				#$t1 = 5
 	beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
+	li $t1, 6				#$t1 = 6
+	beq $t0, $t1, removerVeiculoApt		#if ($t0 == $t1) -> removerVeiculoApt
 	li $t1, 10				#$t1 = 9
 	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
@@ -992,12 +756,13 @@ removerVeiculoApt:
 	
 	move $a0, $t3			#$a0 = $t3
 	printInt			#executa macro
+	quebra_linha			#executa macro
 	
 	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
 
 	bltz $t4, removerVeiculoApt	#se $t4 < 0, volta para o loop
 	
-	la $a0, digiteModeloMoto	#$a0 = digiteModeloMoto
+	la $a0, digiteModeloVeiculo	#$a0 = digiteModeloVeiculo
 	printString			#executa macro
 	
 	li $v0, 8			#chama serviço de ler string
@@ -1006,7 +771,7 @@ removerVeiculoApt:
 	syscall				#executa leitura
 	
 	
-	la $a0, digiteCorMoto	#$a0 = digiteCorMoto
+	la $a0, digiteCorVeiculo	#$a0 = digiteCorVeiculo
 	printString			#executa macro
 	
 	li $v0, 8			#chama serviço de ler string
@@ -1015,8 +780,6 @@ removerVeiculoApt:
 	syscall				#executa leitura
 	
 	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
-	printInt
-	quebra_linha
 	addi $t4, $t4, 332		#$t4 = $t4 + 332, aonde começa os modelos dos veículos
 	addi $t5, $t4, 64		#$t5 = $t4 + 64 (onde as cores começam)
 	
@@ -1033,8 +796,6 @@ removerVeiculoApt:
 	
 	removerModeloApartamento:
 		add $a0, $a0, $t2		#$a0 = $a0 + $t2
-		printInt
-	quebra_linha
 		li $t6, 0			#t6 = 0
 	
 	loopBuscarRemModeloApt:
@@ -1051,14 +812,8 @@ removerVeiculoApt:
 		j loopBuscarRemModeloApt	#volta loop
 	
 veiculosDiferentesRem:
-	beq $t2, $t3, veiculoNaoExisteRem	#if ($t2 == $t3) -> veiculoNaoExisteRem
-
 	addi $t2, $t2, 32			#$t2 = $t2 + 32
-	add $t9, $a0, $0
-	move $a0, $t2
-	printInt
-	quebra_linha
-	move $a0, $t9
+	beq $t2, $t3, veiculoNaoExisteRem	#if ($t2 == $t3) -> veiculoNaoExisteRem
 	addi $t7, $t7, 1			#$t7 = $t7 + 1
 	sub $a0, $a0, $t6			#$a0 = $a0 - $t5
 	sub $a1, $a1, $t6			#$a1 = $a1 - $t5
@@ -1066,7 +821,7 @@ veiculosDiferentesRem:
 	
 modelosIguaisRem:
 	sub $a0, $a0, $t6			#$a0 = $a0 - $t5
-	sub $a1, $a1, $t6			#$a1 = $a1 - $t5	
+	sub $a1, $a1, $t6			#$a1 = $a1 - $t5
 	mul $t7, $t7, 16			#$t7 = $t7 * 16
 	add $a3, $a3, $t7
 	li $t6, 0				#$t6 = 0
@@ -1087,6 +842,7 @@ modelosIguaisRem:
 	coresDiferentesRem:
 	sub $a2, $a2, $t6			#$a0 = $a0 - $t5
 	sub $a3, $a3, $t6			#$a1 = $a1 - $t5
+	li $t6, 0				#$t6 = 0
 	li $t7, 0				#$t7 = 0
 	j veiculosDiferentesRem
 
@@ -1104,10 +860,9 @@ veiculosIguaisRem:
 		addi $t0, $a0, 332			#$t0 = $a0 + 332 (Modelo posição 1)
 		addi $t1, $a0, 364			#$t1 = $a0 + 364 (Modelo posição 2)
 		li $t6, 0				#$t2 = 0
-		li $s0, 32				#$s0 = 32
 		
 	moverModeloVeiculoPosRem:
-		beq $t6, $s0, limparBytesVeiculo	#if ($t6 == $t7) -> limparBytesVeiculoVeiculo
+		beq $t6, $t2, moverModeloVeiculoConcluido	#if ($t6 == $t2) -> moverModeloVeiculoConcluido
 
     		lb $t8, 0($t1)		#$t8 = $t1[i]
     		sb $t8, 0($t0)		#$t0[i] = $t8
@@ -1117,14 +872,22 @@ veiculosIguaisRem:
     		addi $t6, $t6, 1	#$t6 = $t6 + 1
 
 	j moverModeloVeiculoPosRem
+	
+	moverModeloVeiculoConcluido:
+	li $t6, 0			#$t6 = 0
+	addi $t0, $t0, 32		#$t0 = $t0 + 32
+	addi $t1, $t1, 16		#$t1 = $t1 + 16
 
 	moverCorVeiculoPosRem:
-		beq $s0, $t7, limparBytesVeiculo	#Continua após mover cor
-		li $t6, 0				#$t6 = 0
-		li $s0, 16				#$s0 = 16 (Espaço cor)
-		addi $t0, $t0, 64			#$t0 = $t0 + 64 (Cor posição 1)
-		addi $t1, $t1, 48			#$t1 = $t1 + 48 (Cor posição 2)
-		j moverModeloVeiculoPosRem
+		beq $t6, $t7, limparBytesVeiculo	#Continua após mover cor
+		
+		lb $t8, 0($t1)		#$t8 = $t1[i]
+		sb $t8, 0($t0)		#$t0[i] = $t8
+
+    		addi $t0, $t0, 1	#$t0 = $t0 + 1
+    		addi $t1, $t1, 1	#$t1 = $t1 + 1
+    		addi $t6, $t6, 1	#$t6 = $t6 + 1
+		j moverCorVeiculoPosRem
 		
 	limparBytesVeiculo:
 	quebra_linha			#executa macro
@@ -1165,14 +928,14 @@ veiculosIguaisRem:
 	sw $s0, 328($a0)		#Nomo inteiroVeiculo		
 
 veiculoRemocaoConcluida:
-	la $a0, pessoaExiste	#$a0 = pessoaExiste
+	la $a0, veiculoRemovido	#$a0 = pessoaExiste
 	printString		#executa macro
 	quebra_linha		#executa macro
 	
 	j main			#volta para o main
 	
 veiculoNaoExisteRem:
-	la $a0, pessoaNaoExiste	#$a0 = pessoaNaoExiste
+	la $a0, veiculoNaoExiste	#$a0 = pessoaNaoExiste
 	printString		#executa macro
 	quebra_linha		#executa macro
 	j main			#volta para o main
@@ -1201,6 +964,7 @@ buscarApartamentoCondominio:
 		printString				#executa macro
 		lw $a0, indiceApartamento		#$a0 = indiceApartamento
 		printInt				#executa macro
+		quebra_linha				#executa macro
 		la $a0, aptNumEncontrado2		#$a0 = aptNumEncontrado2
 		printString				#executa macro
 		quebra_linha				#executa macro
@@ -1440,4 +1204,3 @@ encerrarPrograma:
 
 	
 	
-
