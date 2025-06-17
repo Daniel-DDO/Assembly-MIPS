@@ -9,21 +9,21 @@
 
 
 .data
-	apartamentosOrigem: .space 17120
-	apartamentos: .space 17120
-	nomePessoa: .space 64
-	inteiroVeiculo: .word 0
-	tipoVeiculo: .space 10
-	modeloVeiculo: .space 32
-	corVeiculo: .space 16
-	barraN: .asciiz "\n"
-	tab: .asciiz "	"
+	apartamentosOrigem: .space 17120	#Espaço para formatação
+	apartamentos: .space 17120		#Espaço de todos os APT
+	nomePessoa: .space 64			#Espaço para o nome de uma pessoa
+	inteiroVeiculo: .word 0			#Espaço para armazenamento de inteiro auxiliar à manutenção de veiculos
+	tipoVeiculo: .space 10			#Espaço para armazenar o tipo de veículo (Carro ou moto)
+	modeloVeiculo: .space 32		#Espaço para armazenar modelo de veículo
+	corVeiculo: .space 16			#Espaço para armazenar cor de veículo
+	barraN: .asciiz "\n"			#Pular linha
+	tab: .asciiz "	"			#Tabulação
 	
 	digiteNomePessoaApt: .asciiz " - Digite o nome da pessoa (até 64 caracteres): "
 	
 	#Apartamentos
-	numApartamento: .word 0
-	indiceApartamento: .word 0
+	numApartamento: .word 0		#Espaço para registro de número de apartamento
+	indiceApartamento: .word 0	#Posição relativa do apartamento
 	digiteNumApartamento: .asciiz "Digite o número do apartamento (de 101 a 1004): "
 	aptNumEncontrado1: .asciiz "Apartamento "
 	aptNumEncontrado2: .asciiz " encontrado."
@@ -38,7 +38,7 @@
 	#Pessoas
 	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
 	pessoaExiste: .asciiz "Pessoa encontrada e removida com sucesso."
-	indicePessoa: .word 0
+	indicePessoa: .word 0	#Posição relativa
 	pessoaAdicionadaSucesso: .asciiz "Pessoa adicionada com sucesso!"
 	
 
@@ -141,13 +141,13 @@
 
 #Macros usuais
 
-.macro quebra_linha
+.macro quebra_linha	#Pular linha rapidamente
 	la $a0, barraN	#$a0 = barraN
 	li $v0, 4	#chama a impressão
 	syscall		#executa a linha anterior
 .end_macro
 
-.macro tab
+.macro tab		#Tabulação rápida
 	la $a0, tab	#$a0 = barraN
 	li $v0, 4	#chama a impressão
 	syscall		#executa a linha anterior
@@ -180,7 +180,7 @@
 
 
 .text
-.globl main
+.globl main			#main inicial e para testes
 
 	la $a0, apartamentos	#$a0 = apartamentos
 	li $t0, 1		#$t0 = 1
@@ -258,12 +258,12 @@ somaApt:
 
 programaPrincipal:
 iniciarShellPrograma:
-	la $a0, shellGDA
+	la $a0, shellGDA	#$a0 = shellGDA
 	printString
 
-	li $v0, 8
-	la $a0, userDigitou
-	li $a1, 100
+	li $v0, 8		#$v0 = 8
+	la $a0, userDigitou	#$a0 = userDigitou
+	li $a1, 100		#$a1 = 100
 	syscall
 
 	la $a2, userDigitou    # Ponteiro para a string completa digitada pelo usuário
@@ -285,10 +285,10 @@ loopEntradaUsuario:
 	li $t7, 4               # MUDANÇA AQUI: Agora 4, para permitir 5 opções (0 a 4)
 	bgt $t5, $t7, erroArgumentos # Se mais de 5 args, erro (option0 a option4)
 
-	beq $t5, 0, salvarOption1
-	beq $t5, 1, salvarOption2
-	beq $t5, 2, salvarOption3
-	beq $t5, 3, salvarOption4
+	beq $t5, 0, salvarOption1	#Salva no option1
+	beq $t5, 1, salvarOption2	#Salva no option2
+	beq $t5, 2, salvarOption3	#Salva no option3
+	beq $t5, 3, salvarOption4	#Salva no option4
 	beq $t5, 4, salvarOption5 # <--- NOVO: Salva no option5
 
 continuarLoopEntrada:
@@ -322,10 +322,10 @@ salvarOption5:
 
 proximoOptionShell:
 	# Baseado em qual option estava sendo preenchida ($t5):
-	beq $t5, 0, encerrarOption1
-	beq $t5, 1, encerrarOption2
-	beq $t5, 2, encerrarOption3
-	beq $t5, 3, encerrarOption4
+	beq $t5, 0, encerrarOption1		#Se $t5=0 (option1), encerra
+	beq $t5, 1, encerrarOption2		#Se $t5=1 (option2), encerra
+	beq $t5, 2, encerrarOption3		#Se $t5=2 (option3), encerra
+	beq $t5, 3, encerrarOption4		#Se $t5=3 (option4), encerra
 	beq $t5, 4, encerrarOption5 # <--- NOVO: Se $t5=4 (option5), encerra
 
 	j continueProximoOptionShell # Salta se $t5 > 4 (erro já tratado)
@@ -367,80 +367,80 @@ finalStringShell:
     la $t9, option1
     li $t0, 0 # Contador para o loop atual
     loopLimparOption1:
-        lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption1
-        li $t7, 10 # ASCII para '\n'
-        beq $t8, $t7, retirarBarraNLinha1
-        addi $t9, $t9, 1
-        addi $t0, $t0, 1
+        lb $t8, 0($t9)			#$t8 = $t9[0]
+        beq $t8, $0, fimLimparOption1	#if $t8 == 0 fimLimparOption1
+        li $t7, 10  			#ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha1	#if $t8 == $t7 retirarBarraNLinha1
+        addi $t9, $t9, 1		#$t9 = $t9 + 1
+        addi $t0, $t0, 1		#$t0 = $t0 + 1
         bge $t0, 12, fimLimparOption1 # <--- AJUSTADO para 12 bytes (option1)
         j loopLimparOption1
     retirarBarraNLinha1:
-        sb $0, 0($t9)
+        sb $0, 0($t9)		#$t9[0] = 0
     fimLimparOption1:
 
     # Processar option2
-    la $t9, option2
-    li $t0, 0
+    la $t9, option2		#$t9 = option2
+    li $t0, 0			#$t0 = 0
     loopLimparOption2:
-        lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption2
-        li $t7, 10
-        beq $t8, $t7, retirarBarraNLinha2
-        addi $t9, $t9, 1
-        addi $t0, $t0, 1
+        lb $t8, 0($t9)		#$t8 = $t9[0]
+        beq $t8, $0, fimLimparOption2	#if $t8 == 0 fimLimparOption2
+        li $t7, 10		 # ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha2	#if $t8 == $t7 retirarBarraNLinha2
+        addi $t9, $t9, 1		#$t9 = $t9 + 1
+        addi $t0, $t0, 1		#$t0 = $t0 + 1
         bge $t0, 5, fimLimparOption2 # <--- AJUSTADO para 5 bytes (option2)
         j loopLimparOption2
     retirarBarraNLinha2:
-        sb $0, 0($t9)
+        sb $0, 0($t9)			#$t9[0] = 0
     fimLimparOption2:
 
     # Processar option3
     la $t9, option3
     li $t0, 0
     loopLimparOption3:
-        lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption3
-        li $t7, 10
-        beq $t8, $t7, retirarBarraNLinha3
-        addi $t9, $t9, 1
-        addi $t0, $t0, 1
+        lb $t8, 0($t9)		#$t8 = $t9[0]
+        beq $t8, $0, fimLimparOption3		#if $t8 == 0 fimLimparOption3
+        li $t7, 10				 # ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha3	#if $t8 == $t7 retirarBarraNLinha3
+        addi $t9, $t9, 1		#$t9 = $t9 + 1
+        addi $t0, $t0, 1		#$t0 = $t0 + 1
         bge $t0, 64, fimLimparOption3 # <--- AJUSTADO para 64 bytes (option3)
         j loopLimparOption3
     retirarBarraNLinha3:
-        sb $0, 0($t9)
+        sb $0, 0($t9)			#$t9[0] = 0
     fimLimparOption3:
 
     # Processar option4
     la $t9, option4
     li $t0, 0
     loopLimparOption4:
-        lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption4
-        li $t7, 10
-        beq $t8, $t7, retirarBarraNLinha4
-        addi $t9, $t9, 1
-        addi $t0, $t0, 1
+        lb $t8, 0($t9)		#$t8 = $t9[0]
+        beq $t8, $0, fimLimparOption4		#if $t8 == 0 fimLimparOption4
+        li $t7, 10				 # ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha4	#if $t8 == $t7 retirarBarraNLinha4
+        addi $t9, $t9, 1		#$t9 = $t9 + 1
+        addi $t0, $t0, 1		#$t0 = $t0 + 1
         bge $t0, 32, fimLimparOption4 # <--- AJUSTADO para 32 bytes (option4)
         j loopLimparOption4
     retirarBarraNLinha4:
-        sb $0, 0($t9)
+        sb $0, 0($t9)			#$t9[0] = 0
     fimLimparOption4:
 
     # NOVO: Processar option5
     la $t9, option5 # <--- $t9 é reutilizado para varrer option5
     li $t0, 0 # $t0 é reutilizado como contador de loop local
     loopLimparOption5:
-        lb $t8, 0($t9)
-        beq $t8, $0, fimLimparOption5
-        li $t7, 10
-        beq $t8, $t7, retirarBarraNLinha5
-        addi $t9, $t9, 1
-        addi $t0, $t0, 1
+        lb $t8, 0($t9)		#$t8 = $t9[0]
+        beq $t8, $0, fimLimparOption5		#if $t8 == 0 fimLimparOption5
+        li $t7, 10				 # ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha5	#if $t8 == $t7 retirarBarraNLinha5
+        addi $t9, $t9, 1		#$t9 = $t9 + 1
+        addi $t0, $t0, 1		#$t0 = $t0 + 1
         bge $t0, 16, fimLimparOption5 # <--- AJUSTADO para 16 bytes (option5)
         j loopLimparOption5
     retirarBarraNLinha5:
-        sb $0, 0($t9)
+        sb $0, 0($t9)			#$t9[0] = 0
     fimLimparOption5:
 
     j verificarComando
@@ -459,52 +459,53 @@ verificarComando:
 	la $a0, rm_morador		#$a0=rm_morador
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, removerMorador
+	beq $v0, 1, removerMorador	#if $v0 == 1, removerMorador
 
 	la $a0, ad_auto			#$a0=ad_auto
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, adicionarAuto
+	beq $v0, 1, adicionarAuto	#if $v0 == 1, adicionarAuto
+
 
 	la $a0, rm_auto			#$a0=rm_auto
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, removerAuto
+	beq $v0, 1, removerAuto		#if $v0 == 1, removerAuto
 
 	la $a0, limpar_ap		#$a0=limpar_ap
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, limparApartamento
+	beq $v0, 1, limparApartamento	#if $v0 == 1, limparApartamento
 
 	la $a0, info_ap			#$a0=info_ap
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, infoApartamento
+	beq $v0, 1, infoApartamento	#if $v0 == 1, infoApartamento
 
 	la $a0, info_geral		#$a0=info_geral
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, infoGeral
+	beq $v0, 1, infoGeral		#if $v0 == 1, infoGeral
 
 	la $a0, salvar			#$a0=salvar
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, salvarDados
+	beq $v0, 1, salvarDados		#if $v0 == 1, salvarDados
 
 	la $a0, recarregar		#$a0=recarregar
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, recarregarDados
+	beq $v0, 1, recarregarDados	#if $v0 == 1, recarregarDados
 
 	la $a0, formatar		#$a0=formatar
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, formatarSistema
+	beq $v0, 1, formatarSistema	#if $v0 == 1, formatarSistema
 
 	la $a0, exit			#$a0=exit
 	la $a1, option1			#$a1=option1
 	jal compararStrings
-	beq $v0, 1, encerrarPrograma
+	beq $v0, 1, encerrarPrograma	#if $v0 == 1, encerrarPrograma
 	
 	la $a0, comandoInvalido		#$a0=comandoInvalido
 	printString			#executa macro
@@ -600,12 +601,12 @@ adicionarMorador:
 		addi $t1, $t1, 1		#$t1 = $t1 + 1
 		sw $t1, 0($a0)			#$a0[] = $t1
 		
-		quebra_linha
-		quebra_linha
-		la $a0, pessoaAdicionadaSucesso
-		printString
-		quebra_linha
-		quebra_linha
+		quebra_linha			#executa macro
+		quebra_linha			#executa macro
+		la $a0, pessoaAdicionadaSucesso	#$a0 = pessoaAdicionadaSucesso
+		printString			#executa macro
+		quebra_linha			#executa macro
+		quebra_linha			#executa macro
 		
 		j programaPrincipal
 
@@ -643,7 +644,7 @@ limparApartamento:
    	move $t0, $v0              # $t0 = valor inteiro retornado por stringParaInt
     	sw $t0, numApartamento     # Salva o número do apartamento na variável global (já existente)
 
-   	lw $t3, numApartamento 
+   	lw $t3, numApartamento 		#$t3 = numApartamento
 	
 	jal buscarApartamentoCondominio	#faz a busca
 	
@@ -683,19 +684,34 @@ limparApartamento:
 	fimLimparApto:
 
     	la $a0, msgAptoLimpo
-    	printString
-    	quebra_linha
-    	quebra_linha
+    	printString		#executa macro
+    	quebra_linha		#executa macro
+    	quebra_linha		#executa macro
 
    	j programaPrincipal                  # Retorna ao menu principal
 	
 	
 
 infoApartamento:
-	la $a0, option2			#$a0 = option2
-	printString			#executa macro
-	quebra_linha			#executa macro
-	j programaPrincipal
+    la $a0, option2            #$a0 = option2
+    printString            #executa macro
+    quebra_linha            #executa macro
+
+    la $t0, option2            #$t0 = option2
+    lb $t1, 0($t0)            #$t1 = $t0[0]
+    li $s1, 0            #$s1 = 0
+    li $t3, 101            #$t3 = 101
+    li $s0, 2            #
+
+    li $t2, 'a'            #$t2 = a
+    beq $t1, $t2, iniciarTodosAPs
+    jal stringParaInt    #Transforma em Int
+    move $t3, $v0
+    li $s0, 1            #$s0 = 1
+
+    j iniciarTodosAPs
+
+    j programaPrincipal
 
 infoGeral:
 
@@ -706,17 +722,17 @@ infoGeral:
 	
 	la $a0, apartamentos
 	addi $a0, $a0, 4                         #endereço da quantidade de pessoas do 1° apto
-	li $t0, 0
-	li $t1, 40
-	li $t2, 0				 #contador de apto vazios
-	li $t6, 0
-	li $t7, 0
+	li $t0, 0				#$t0 = 0
+	li $t1, 40				#$t1 = 40
+	li $t2, 0				#$t2 = 0 (contador de apto vazios)
+	li $t6, 0				#$t6 = 0
+	li $t7, 0				#$t7 = 0
 	
     loopVerificarApartamentos:
 	
- 	beq $t0, $t1, imprimirResultadoInfoGeral
-	lw $t4, 0($a0) 
-	beqz $t4, incrementarContagemAptosVazios
+ 	beq $t0, $t1, imprimirResultadoInfoGeral	#if $t0 == $t1 imprimirResultadoInfoGeral
+	lw $t4, 0($a0) 					#$t4 = $a0[0]
+	beqz $t4, incrementarContagemAptosVazios	#if $t0 == 0 incrementarContagemAptosVazios
 	
 	continuaLoopVerificarAptos:
 	
@@ -727,7 +743,7 @@ infoGeral:
 	
 	   
     incrementarContagemAptosVazios:
-	addi $t2, $t2, 1 
+	addi $t2, $t2, 1 				#$t2 = $t2 + 1
 	
          j continuaLoopVerificarAptos
 	   
@@ -742,33 +758,33 @@ infoGeral:
 	 	div $t8, $t7, $t1			#PorcentagemAptosNaoVazios
 	 	sub  $t7, $t5, $t8			#porcentagemAptosVazios
 	 	
-	 	la $a0, aptosNaoVazios
-	 	printString
-	 	move $a0, $t6
-		printInt
-		la $a0, aptosVaziosOuNaoP1
-		printString
-		move $a0, $t8
-		printInt
-		la $a0, aptosVaziosOuNaoP2
-		printString
+	 	la $a0, aptosNaoVazios			#$a0 = aptosNaoVazios
+	 	printString				#executa macro
+	 	move $a0, $t6				#$a0 = $t6
+		printInt				#executa macro
+		la $a0, aptosVaziosOuNaoP1		#$a0 = aptosVaziosOuNaoP1
+		printString				#executa macro
+		move $a0, $t8				#$a0 = $t8
+		printInt				#executa macro
+		la $a0, aptosVaziosOuNaoP2		#$a0 = aptosVaziosOuNaoP2
+		printString				#executa macro
 		
-		quebra_linha
-		quebra_linha
+		quebra_linha				#executa macro
+		quebra_linha				#executa macro
 		
 	 	la $a0, aptosVazios
-	 	printString
+	 	printString				#executa macro
 	 	move $a0, $t2
-	 	printInt
+	 	printInt				#executa macro
 	 	la $a0, aptosVaziosOuNaoP1
-		printString
+		printString				#executa macro
 	 	move $a0, $t7
-	 	printInt
+	 	printInt				#executa macro
 	 	la $a0, aptosVaziosOuNaoP2
-		printString
+		printString				#executa macro
 		
-		quebra_linha
-		quebra_linha
+		quebra_linha				#executa macro
+		quebra_linha				#executa macro
 	
       
 	j programaPrincipal
@@ -778,7 +794,7 @@ salvarDados:
 	printString			#executa macro
 	quebra_linha			#executa macro
 
-    quebra_linha
+    quebra_linha			#executa macro
 
     li $v0, 13		     #comando para ler ou escrever em arquivo
     la $a0, nomeArquivo      # Nome do arquivo
@@ -800,23 +816,23 @@ salvarDados:
     syscall
 
     la $a0, msgSalvoSucesso
-    printString
-    quebra_linha
+    printString				#executa macro
+    quebra_linha			#executa macro
     
     j programaPrincipal                   # Retorna ao menu principal
     
     
    erroSalvar:
 
-    quebra_linha
+    quebra_linha		#executa macro
 
     li $v0, 16		     #fechando arquivo
     move $a0, $s0            # File descriptor
     syscall
     
     la $a0, msgErroSalvar
-    printString
-    quebra_linha
+    printString				#executa macro
+    quebra_linha			#executa macro
     
    j programaPrincipal                 # Retorna ao menu principal
     
@@ -828,7 +844,7 @@ recarregarDados:
 	printString			#executa macro
 	quebra_linha			#executa macro
 	
-	quebra_linha
+	quebra_linha			#executa macro
 
     li $v0, 13		     #comando para ler ou escrever em arquivo
     la $a0, nomeArquivo      # Nome do arquivo
@@ -847,39 +863,39 @@ recarregarDados:
 
     bltz $v0, erroLerArquivo # Se $v0 < 0, houve um erro na leitura
 
-    li $v0, 16
+    li $v0, 16			#$v0 = 16
     move $a0, $s0            # File descriptor
     syscall
 
-    la $a0, msgCarregadoSucesso
-    printString
-    quebra_linha
+    la $a0, msgCarregadoSucesso		#$a0 = msgCarregadoSucesso
+    printString				#executa macro
+    quebra_linha			#executa macro
     
     j programaPrincipal                   # Retorna ao menu principal
     
     
   erroAbrirArquivo:
 
-    quebra_linha
+    quebra_linha			#executa macro
  
     la $a0, msgArquivoNaoEncontrado
-    printString
-    quebra_linha
+    printString				#executa macro
+    quebra_linha			#executa macro
     
     j programaPrincipal 
     
 
   erroLerArquivo:
 
-    quebra_linha
+    quebra_linha			#executa macro
  
     li $v0, 16			#fechando arquivo
-    move $a0, $s0
+    move $a0, $s0		#$a0 = $s0
     syscall
     
     la $a0, msgErroCarregar	#$a0 = msgErroCarregar
     printString			#executa macro
-    quebra_linha
+    quebra_linha			#executa macro
     
     j programaPrincipal
 	
@@ -891,7 +907,7 @@ formatarSistema:
 	quebra_linha			#executa macro
 	
 	
-	quebra_linha
+	quebra_linha			#executa macro
 
     la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
     la $t3, apartamentos        # Endereço destino: apartamentos
@@ -913,9 +929,9 @@ formatarSistema:
    fimFormatacao:
 
     la $a0, msgDadosFormatados
-    printString
-    quebra_linha
-    quebra_linha
+    printString				#executa macro
+    quebra_linha			#executa macro
+    quebra_linha			#executa macro
 
    j programaPrincipal                   # Retorna ao menu principal
 
@@ -937,8 +953,8 @@ loopStringInt:
     sub $t0, $t0, $t1        #$t0 = char - '0'
 
     #numero = numero * 10 + digito
-    mul $v0, $v0, 10
-    add $v0, $v0, $t0
+    mul $v0, $v0, 10		#$v0 = $v0 * 10
+    add $v0, $v0, $t0		#$v0 = $v0 + $t0
 
     addi $a0, $a0, 1         #Avança para próximo caractere
     j loopStringInt
@@ -951,7 +967,7 @@ fimStringInt:
 
 erroArgumentoFaltando:
 	la $a0, argumentoFaltando
-	printString
+	printString			#executa macro
 	j programaPrincipal
 
 encerrarPrograma:
@@ -991,7 +1007,7 @@ main:
 	#beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
 	la $a0, comandoInvalido
-	printString
+	printString			#executa macro
 	
 	j main				#volta pro main
 	encerrar			#executa macro
@@ -1291,10 +1307,10 @@ adicionarAutomovel:
 
 semMoradoresSemVeiculos:
 	
-	quebra_linha
+	quebra_linha			#executa macro
 	la $a0, msgNaoExisteMoradores
-	printString
-	quebra_linha
+	printString			#executa macro
+	quebra_linha			#executa macro
 	
 	j main
 	
@@ -1715,17 +1731,17 @@ buscarApartamentoCondominio:
 		lw $t2, indiceApartamento
 		
 		loopIndiceApt:
-			beq $t0, $t1, concluiAptEncontrado
-			lw $t3, 0($a0)
+			beq $t0, $t1, concluiAptEncontrado	#if $t0 == $t1 concluiAptEncontrado
+			lw $t3, 0($a0)				#$t3 = $a0[0]
 			beq $t3, $t2, retornaIndiceApt
 			
-			addi $t0, $t0, 4
-			addi $a0, $a0, 4
+			addi $t0, $t0, 4			#$t0 = $t0 + 4
+			addi $a0, $a0, 4			#$a0 = $a0 + 4
 			
 			j loopIndiceApt
 		
 		retornaIndiceApt:
-			sw $t0, indiceApartamento
+			sw $t0, indiceApartamento		#indiceApartamento = $t0
 		
 		concluiAptEncontrado:
 		jr $ra					#volta para inserirPessoaApt
@@ -1737,7 +1753,7 @@ buscarApartamentoCondominio:
 		li $t0, -1				#$t0 = -1
 		sw $t0, indiceApartamento		#indiceApartamento = -1
 		quebra_linha				#executa macro
-		jr $ra
+		jr $ra					#Volta para $ra
 		#j inserirPessoaApt			#volta para inserirPessoaApt no começo
 	
 	
@@ -1752,7 +1768,7 @@ infoCadastradaApartamento:
 	add $s0, $0, $v0		#$s0 = $0 + $v0
 	li $t0, 2			#$v0 = 2
 	quebra_linha			#executa macro
-	beq $s0, $t0, iniciarTodosAPs
+	beq $s0, $t0, iniciarTodosAPs	#if $s0 == $t0 iniciarTodosAPs
 	
 	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
 	printString			#executa macro
@@ -1813,7 +1829,7 @@ infoCadastradaApartamento:
 			addi $t6, $t6, 1	#$t6 = $t6 + 1
 			la $a0, nomePessoa	#$a0 = nomePessoa
 			printString		#executa macro
-			la $t5, nomePessoa
+			la $t5, nomePessoa	#$t5 = nomePessoa
 			add $t3, $0, $0		#$t3 = 0
 			beq $t6, $t4, verificarVeiculosApartamento	#if($t6 == $t4) -> verificarVeiculosApt
 			tab			#executa macro
@@ -1948,7 +1964,7 @@ infoCadastradaApartamento:
 		beq $s1, $t0, finalizaVisualizarInformacoes	#checa se já passou pelos 40
 		j todosAPs			#retorna ao loop
 		finalizaVisualizarInformacoes:	#finaliza
-		j main
+		j programaPrincipal
 	
 
 verificarInfoApartamentos:
