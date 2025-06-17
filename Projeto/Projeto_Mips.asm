@@ -103,6 +103,7 @@
 	exit: .asciiz "exit"
 	argumentoFaltando: .asciiz "Faltam argumentos na execução.\n"
 	
+	numApt: .word 0
 
 	#Entrada
 	userDigitou: .space 100
@@ -237,7 +238,7 @@ loopCopiaInicial:
 
 inicializacaoCompleta:
 
-   	 j main
+   	 j programaPrincipal
 	
 	
 somaApt:
@@ -302,17 +303,167 @@ salvarOption4:
 	j continuarLoopEntrada
 
 proximoOptionShell:
-	addi $t5, $t5, 1		#$t5++
-	addi $a2, $a2, 1		#$a2++
-	j loopEntradaUsuario
+
+    # Baseado em qual option estava sendo preenchida ($t5):
+    beq $t5, 0, encerrarOption1
+    beq $t5, 1, encerrarOption2
+    beq $t5, 2, encerrarOption3
+    beq $t5, 3, encerrarOption4
+    j continueProximoOptionShell # Salta se $t5 > 3 (erro já tratado)
+
+encerrarOption1:
+    sb $0, 0($t1) # Coloca null no fim do option1 (onde $t1 parou)
+    j continueProximoOptionShell
+
+encerrarOption2:
+    sb $0, 0($t2) # Coloca null no fim do option2
+    j continueProximoOptionShell
+
+encerrarOption3:
+    sb $0, 0($t3) # Coloca null  no fim do option3
+    j continueProximoOptionShell
+
+encerrarOption4:
+    sb $0, 0($t4) # Coloca null no fim do option4
+    j continueProximoOptionShell
+
+continueProximoOptionShell:
+    addi $t5, $t5, 1    # Incrementa o contador de options (passa para a próxima)
+    addi $a2, $a2, 1    # Avança o ponteiro de leitura na string do usuário (pula o '-')
+    j loopEntradaUsuario # Volta pro loop para ler o próximo caractere
 
 finalStringShell:
-	sb $0, 0($t1)			#termina option1
-	sb $0, 0($t2)			#termina option2
-	sb $0, 0($t3)			#termina option3
-	sb $0, 0($t4)			#termina option4
 
-	j verificarComando		#vai verificar comando
+la $t9, option1
+    li $t0, 0 # Contador
+    loopLimparOption1:
+        lb $t8, 0($t9)
+        beq $t8, $0, fimLimparOption1 # Se já é null, termina
+        li $t7, 10 # ASCII para '\n'
+        beq $t8, $t7, retirarBarraNLinha1 # Se for nova linha, substitui por null
+        addi $t9, $t9, 1
+        addi $t0, $t0, 1
+        bge $t0, 20, fimLimparOption1 # Evita ler fora do limite de option1 (20 bytes)
+        j loopLimparOption1
+    retirarBarraNLinha1:
+        sb $0, 0($t9) # Substitui '\n' por '\0'
+    fimLimparOption1:
+
+    # Repita para option2
+    la $t9, option2
+    li $t0, 0
+    loopLimparOption2:
+        lb $t8, 0($t9)
+        beq $t8, $0, fimLimparOption2
+        li $t7, 10
+        beq $t8, $t7, retirarBarraNLinha2
+        addi $t9, $t9, 1
+        addi $t0, $t0, 1
+        bge $t0, 64, fimLimparOption2 # Limite de option2 (64 bytes)
+        j loopLimparOption2
+    retirarBarraNLinha2:
+        sb $0, 0($t9)
+    fimLimparOption2:
+
+    # Repita para option3
+    la $t9, option3
+    li $t0, 0
+    loopLimparOption3:
+        lb $t8, 0($t9)
+        beq $t8, $0, fimLimparOption3
+        li $t7, 10
+        beq $t8, $t7, retirarBarraNLinha3
+        addi $t9, $t9, 1
+        addi $t0, $t0, 1
+        bge $t0, 32, fimLimparOption3 # Limite de option3 (32 bytes)
+        j loopLimparOption3
+    retirarBarraNLinha3:
+        sb $0, 0($t9)
+    fimLimparOption3:
+
+    # Repita para option4
+    la $t9, option4
+    li $t0, 0
+    loopLimparOption4:
+        lb $t8, 0($t9)
+        beq $t8, $0, fimLimparOption4
+        li $t7, 10
+        beq $t8, $t7, retirarBarraNLinha4
+        addi $t9, $t9, 1
+        addi $t0, $t0, 1
+        bge $t0, 16, fimLimparOption4 # Limite de option4 (16 bytes)
+        j loopLimparOption4
+    retirarBarraNLinha4:
+        sb $0, 0($t9)
+    fimLimparOption4:
+
+    la $t1, option1
+    la $t2, option2
+    la $t3, option3
+    la $t4, option4
+    
+    # Processar option1
+    li $t5, 0 # Contador de caracteres
+    loopFinalizarLinha1:
+        lb $t6, 0($t1)
+        beq $t6, $0, fimFinalizarLinha1 # Fim da string
+        li $t7, 10 # ASCII do newline
+        beq $t6, $t7, substituirEFinalizarLinha1 # Encontrou newline, substitui e termina
+        addi $t1, $t1, 1
+        addi $t5, $t5, 1
+        bge $t5, 20, fimFinalizarLinha1 # Prevenção de overflow para o buffer
+        j loopFinalizarLinha1
+    substituirEFinalizarLinha1:
+        sb $0, 0($t1) # Substitui '\n' por '\0'
+    fimFinalizarLinha1:
+    
+    # Processar option2
+    li $t5, 0
+    loopFinalizarLinha2:
+        lb $t6, 0($t2)
+        beq $t6, $0, fimFinalizarLinha2
+        li $t7, 10
+        beq $t6, $t7, substituirEFinalizarLinha2
+        addi $t2, $t2, 1
+        addi $t5, $t5, 1
+        bge $t5, 64, fimFinalizarLinha2
+        j loopFinalizarLinha2
+    substituirEFinalizarLinha2:
+        sb $0, 0($t2)
+    fimFinalizarLinha2:
+    
+    # Processar option3
+    li $t5, 0
+    loopFinalizarLinha3:
+        lb $t6, 0($t3)
+        beq $t6, $0, fimFinalizarLinha3
+        li $t7, 10
+        beq $t6, $t7, substituirEFinalizarLinha3
+        addi $t3, $t3, 1
+        addi $t5, $t5, 1
+        bge $t5, 32, fimFinalizarLinha3
+        j loopFinalizarLinha3
+    substituirEFinalizarLinha3:
+        sb $0, 0($t3)
+    fimFinalizarLinha3:
+
+    # Processar option4
+    li $t5, 0
+    loopFinalizarLinha4:
+        lb $t6, 0($t4)
+        beq $t6, $0, fimFinalizarLinha4
+        li $t7, 10
+        beq $t6, $t7, substituirEFinalizarLinha4
+        addi $t4, $t4, 1
+        addi $t5, $t5, 1
+        bge $t5, 16, fimFinalizarLinha4
+        j loopFinalizarLinha4
+    substituirEFinalizarLinha4:
+        sb $0, 0($t4)
+        
+    fimFinalizarLinha4:
+
+    j verificarComando      # Vai verificar o comando
 
 erroArgumentos:
 	la $a0, comandoInvalido		#$a0=comandoInvalido
@@ -402,24 +553,81 @@ stringIguaisComp:
 	jr $ra				#retorna
 
 adicionarMorador:
-	la $t9, option3
-	lb $t0, 0($t9)
-	beqz $t0, erroArgumentoFaltando
+	la $t9, option3			#$t9 = option3
+	lb $t0, 0($t9)			#$t0 = $t9[0]
+	beqz $t0, erroArgumentoFaltando	#if ($t0 ==0 ) -> erroArg
+	
+	la $a0, option2			#$a0 = option 2
+	jal stringParaInt		#converte string em int
+	move $t0, $v0			#$t0 = $v0
+	sw $t0, numApt			#numApt = $t0
 
-	la $a0, option2
-	printString		
-	quebra_linha
+	la $a0, option3    		#$a0 = option 3
+	
+	lw $t0, numApt			#$t0 = numApt
+	add $t3, $0, $t0		#$t3 = $0 + $t0
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+	quebra_linha			#executa macro
+	
+	bltz $t4, adicionarMorador	#se $t4 < 0, volta para o loop
+	
+	#Tem que verifcar quantas pessoas existem naquele apartamento
+	la $a0, apartamentos		#$a0 = apartamentos
+	addi $t4, $t4, 4		#$t4 = $t4 + 4
+	add $a0, $a0, $t4		#$a0 = $a0 + $t4
+	lw $t5, 0($a0)			#$t5 = $a0[i] (carrega em t5 o valor que está na posicao de a0)
+	
+	li $t6, 5			#$t6 = 5
+	beq $t5, $t6, apartamentoEstaCheio	#if ($t5 == $t6) -> apartamentoEstaCheio
+	
+	mul $t7, $t5, 64		#$t7 = $t5 * 64
+	addi $t7, $t7, 8		#$t7 = $t7 + 8
+	
+	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome do morador a ser inserido
 
-	jal stringParaInt
-	move $t0, $v0
-	move $a0, $t0
-	printInt
-	quebra_linha
-
-	la $a0, option3      
-	printString
-
-    j programaPrincipal
+	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+	la $t1, option3			#$t1 = option3 (nomePessoa)
+	la $a0, apartamentos		#$a0 = apartamentos
+	
+	add $a0, $a0, $t0		#$a0 = $a0 + $t0
+	add $a0, $a0, $t7		#$t0 = $t0 + $t7
+	
+	loopInserirNomePessoa:
+		lb $t2, 0($t1)				#$t1[0] = $t2 
+		beq $t2, $0, fimInserirPessoaApt	#if ($t2 == 0) -> continuaInserirPessoaApt
+	
+		sb $t2, 0($a0)		#$a0[0] = $t2
+		
+		addi $t1, $t1, 1	#$t1 = $t1 + 1
+		addi $a0, $a0, 1	#$a0 = $a0 + 1
+		
+		j loopInserirNomePessoa	#volta loop
+	
+	fimInserirPessoaApt:
+		lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+		la $a0, apartamentos		#$a0 = apartamentos
+	
+		add $a0, $a0, $t0		#$a0 = $a0 + $t0
+		addi $a0, $a0, 4		#$a0 = $a0 + 4
+	
+		lw $t1, 0($a0)			#$t1 = qtdPessoasApt
+		addi $t1, $t1, 1		#$t1 = $t1 + 1
+		sw $t1, 0($a0)			#$a0[] = $t1
+		
+		quebra_linha
+		quebra_linha
+		la $a0, pessoaAdicionadaSucesso
+		printString
+		quebra_linha
+		quebra_linha
+		
+		j programaPrincipal
 
 
 removerMorador:
@@ -441,10 +649,67 @@ removerAuto:
 	j programaPrincipal
 
 limparApartamento:
+
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
-	j programaPrincipal
+	
+	la $t9, option2            # $t9 = endereço de option2
+  	lb $t0, 0($t9)             # $t0 = primeiro byte de option2
+    	beqz $t0, erroArgumentoFaltando # Se for 0 (string vazia), erro
+
+    	la $a0, option2            # $a0 = endereço da string em option2
+    	jal stringParaInt          # Chama sua função para converter string para int
+   	move $t0, $v0              # $t0 = valor inteiro retornado por stringParaInt
+    	sw $t0, numApartamento     # Salva o número do apartamento na variável global (já existente)
+
+   	lw $t3, numApartamento 
+	
+	jal buscarApartamentoCondominio	#faz a busca
+	
+	move $a0, $t3			#$a0 = $t3
+	printInt			#executa macro
+	quebra_linha			#executa macro
+	
+	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
+
+	bltz $t4, limparApartamento	#se $t4 < 0, volta para o loop
+	
+	quebra_linha		#executa macro
+
+    	la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
+    	addi $t2, $t2, 4	    #$t3 = $t2 + 4 (endereço da quantidade de pessoas do apto)
+    	
+    	la $t3, apartamentos        # Endereço destino: apartamentos
+    	add $t3, $t3, $t4	    #$t3 = $t3 + $t4  (endereço do apto)
+    	addi $t3, $t3, 4	    #$t3 = $t3 + 4 (endereço da quantidade de pessoas do apto)
+    	
+    	li $t0, 0                   # Contador de bytes
+   	li $t1, 424                 # Total de bytes a copiar (mesmo tamanho da área)
+
+	loopLimpaApartamentos:
+	
+   	 beq $t0, $t1, fimLimparApto # Se copiamos todos os bytes, termine
+
+    	 lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
+   	 sb $t4, 0($t3)              # Salva o byte em apartamentos
+
+    	 addi $t2, $t2, 1            # Avança no endereço fonte
+   	 addi $t3, $t3, 1            # Avança no endereço destino
+   	 addi $t0, $t0, 1            # Incrementa o contador de bytes
+
+    	j loopLimpaApartamentos
+
+	fimLimparApto:
+
+    	la $a0, msgAptoLimpo
+    	printString
+    	quebra_linha
+    	quebra_linha
+
+   	j programaPrincipal                  # Retorna ao menu principal
+	
+	
 
 infoApartamento:
 	la $a0, option2			#$a0 = option2
@@ -452,29 +717,267 @@ infoApartamento:
 	quebra_linha			#executa macro
 	j programaPrincipal
 
-#infoGeral:
+infoGeral:
+
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
+	
+	
+	la $a0, apartamentos
+	addi $a0, $a0, 4                         #endereço da quantidade de pessoas do 1° apto
+	li $t0, 0
+	li $t1, 40
+	li $t2, 0				 #contador de apto vazios
+	li $t6, 0
+	li $t7, 0
+	
+    loopVerificarApartamentos:
+	
+ 	beq $t0, $t1, imprimirResultadoInfoGeral
+	lw $t4, 0($a0) 
+	beqz $t4, incrementarContagemAptosVazios
+	
+	continuaLoopVerificarAptos:
+	
+	addi $t0, $t0, 1			#incrementa 1 no $t1 (iterador)
+	addi $a0, $a0, 428			#incrementa 428 no $a0
+	
+	j loopVerificarApartamentos
+	
+	   
+    incrementarContagemAptosVazios:
+	addi $t2, $t2, 1 
+	
+         j continuaLoopVerificarAptos
+	   
+
+    imprimirResultadoInfoGeral: 
+   
+	 	quebra_linha
+	 	sub $t6, $t1, $t2			#AptosNaoVazios
+	 	li $t5, 100				#$t5 = 100
+	 	
+	 	mul $t7, $t6, $t5
+	 	div $t8, $t7, $t1			#PorcentagemAptosNaoVazios
+	 	sub  $t7, $t5, $t8			#porcentagemAptosVazios
+	 	
+	 	la $a0, aptosNaoVazios
+	 	printString
+	 	move $a0, $t6
+		printInt
+		la $a0, aptosVaziosOuNaoP1
+		printString
+		move $a0, $t8
+		printInt
+		la $a0, aptosVaziosOuNaoP2
+		printString
+		
+		quebra_linha
+		quebra_linha
+		
+	 	la $a0, aptosVazios
+	 	printString
+	 	move $a0, $t2
+	 	printInt
+	 	la $a0, aptosVaziosOuNaoP1
+		printString
+	 	move $a0, $t7
+	 	printInt
+	 	la $a0, aptosVaziosOuNaoP2
+		printString
+		
+		quebra_linha
+		quebra_linha
+	
+      
 	j programaPrincipal
 
-#salvarDados:
+salvarDados:
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
-	j programaPrincipal
+
+    quebra_linha
+
+    li $v0, 13		     #comando para ler ou escrever em arquivo
+    la $a0, nomeArquivo      # Nome do arquivo
+    li $a1, 1                # Flag para escrita 
+    syscall
+    
+    move $s0, $v0            # Salva o file descriptor em $s0
+
+    li $v0, 15		     #escrever no arquivo
+    move $a0, $s0            # File descriptor
+    la $a1, apartamentos     # Endereço inicial da área de dados
+    li $a2, 17120            # Tamanho total da área de apartamentos 
+    syscall
+
+    bltz $v0, erroSalvar # Se $v0 < 0, houve um erro ao escrever
+
+    li $v0, 16		     #fechando arquivo
+    move $a0, $s0            # File descriptor
+    syscall
+
+    la $a0, msgSalvoSucesso
+    printString
+    quebra_linha
+    
+    j programaPrincipal                   # Retorna ao menu principal
+    
+    
+   erroSalvar:
+
+    quebra_linha
+
+    li $v0, 16		     #fechando arquivo
+    move $a0, $s0            # File descriptor
+    syscall
+    
+    la $a0, msgErroSalvar
+    printString
+    quebra_linha
+    
+   j programaPrincipal                 # Retorna ao menu principal
+    
+	
 
 recarregarDados:
+
 	la $a0, option2			#$a0= option2
 	printString			#executa macro
 	quebra_linha			#executa macro
-	j programaPrincipal
+	
+	quebra_linha
+
+    li $v0, 13		     #comando para ler ou escrever em arquivo
+    la $a0, nomeArquivo      # Nome do arquivo
+    li $a1, 0                # Flag para leitura 
+    syscall
+    
+    move $s0, $v0            # Salva o file descriptor em $s0
+
+    bltz $s0, erroAbrirArquivo # Se $s0 < 0, houve um erro ao abrir (arquivo não existe)
+
+    move $a0, $s0            # File descriptor
+    li $v0, 14
+    la $a1, apartamentos     # Endereço inicial da área de destino
+    li $a2, 17120            # Tamanho esperado dos dados
+    syscall
+
+    bltz $v0, erroLerArquivo # Se $v0 < 0, houve um erro na leitura
+
+    li $v0, 16
+    move $a0, $s0            # File descriptor
+    syscall
+
+    la $a0, msgCarregadoSucesso
+    printString
+    quebra_linha
+    
+    j programaPrincipal                   # Retorna ao menu principal
+    
+    
+  erroAbrirArquivo:
+
+    quebra_linha
+ 
+    la $a0, msgArquivoNaoEncontrado
+    printString
+    quebra_linha
+    
+    j programaPrincipal 
+    
+
+  erroLerArquivo:
+
+    quebra_linha
+ 
+    li $v0, 16			#fechando arquivo
+    move $a0, $s0
+    syscall
+    
+    la $a0, msgErroCarregar	#$a0 = msgErroCarregar
+    printString			#executa macro
+    quebra_linha
+    
+    j programaPrincipal
+	
 
 formatarSistema:
+
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
+	
+	
+	quebra_linha
+
+    la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
+    la $t3, apartamentos        # Endereço destino: apartamentos
+    li $t0, 0                   # Contador de bytes
+    li $t1, 17120               # Total de bytes a copiar (mesmo tamanho da área)
+
+   loopFormataApartamentos:
+    beq $t0, $t1, fimFormatacao # Se copiamos todos os bytes, termine
+
+    lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
+    sb $t4, 0($t3)              # Salva o byte em apartamentos
+
+    addi $t2, $t2, 1            # Avança no endereço fonte
+    addi $t3, $t3, 1            # Avança no endereço destino
+    addi $t0, $t0, 1            # Incrementa o contador de bytes
+
+    j loopFormataApartamentos
+
+   fimFormatacao:
+
+    la $a0, msgDadosFormatados
+    printString
+    quebra_linha
+    quebra_linha
+
+   j programaPrincipal                   # Retorna ao menu principal
+
+
+stringParaInt:
+    li $v0, 0                #inicializa o resultado em 0
+
+loopStringInt:
+    lb $t0, 0($a0)           #$t0 = $a0[i]
+    beqz $t0, fimStringInt   #se for fim da string, encerra
+
+    #Verifica se é um dígito
+    li $t1, 48		# '0'
+    li $t2, 57		# '9'
+    blt $t0, $t1, fimStringInt  #Se < '0', termina
+    bgt $t0, $t2, fimStringInt  #Se > '9', termina
+
+    #converte ASCII -> inteiro
+    sub $t0, $t0, $t1        #$t0 = char - '0'
+
+    #numero = numero * 10 + digito
+    mul $v0, $v0, 10
+    add $v0, $v0, $t0
+
+    addi $a0, $a0, 1         #Avança para próximo caractere
+    j loopStringInt
+
+fimStringInt:
+    jr $ra                   #Retorna
+
+
+
+
+erroArgumentoFaltando:
+	la $a0, argumentoFaltando
+	printString
 	j programaPrincipal
+
+encerrarPrograma:
+	la $a0, encerrandoPr		#$a0 = encerrandoPr
+	printString			#executa macro
+	encerrar			#executa macro
 
 
 main:
@@ -485,27 +988,27 @@ main:
 	move $t0, $v0			#$t0 = $v0
 	
 	li $t1, 1				#$t1 = 1
-	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
+	#beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
 	li $t1, 2				#$t1 = 2
-	beq $t0, $t1, limparApto		#if ($t0 == $t1) -> limparApto
+	#beq $t0, $t1, limparApto		#if ($t0 == $t1) -> limparApto
 	li $t1, 3				#$t1 = 3
-	beq $t0, $t1, inserirPessoaApt		#if ($t0 == $t1) -> inserirPessoaApt
+	#beq $t0, $t1, adicionarMorador		#if ($t0 == $t1) -> inserirPessoaApt
 	li $t1, 4				#$t1 = 4
-	beq $t0, $t1, adicionarAutomovel	#if ($t0 == $t1) -> adicionarAutomovel
+	#beq $t0, $t1, adicionarAutomovel	#if ($t0 == $t1) -> adicionarAutomovel
 	li $t1, 5				#$t1 = 5
-	beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
+	#beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
 	li $t1, 6				#$t1 = 6
-	beq $t0, $t1, removerVeiculoApt		#if ($t0 == $t1) -> removerAutomovel
+	#beq $t0, $t1, removerVeiculoApt		#if ($t0 == $t1) -> removerAutomovel
 	li $t1, 7				#$t1 = 7
-	beq $t0, $t1, infoGeral			#if ($t0 == $t1) -> info_geral
+	#beq $t0, $t1, infoGeral			#if ($t0 == $t1) -> info_geral
 	li $t1, 8				#$t1, 8
-	beq $t0, $t1, salvarDados		#if ($t0 == $t1) -> salvarDados
+	#beq $t0, $t1, salvarDados		#if ($t0 == $t1) -> salvarDados
 	li $t1, 9				#$t1, 9
-	beq $t0, $t1, carregarDados		#if ($t0 == $t1) -> carregarDados
+	#beq $t0, $t1, carregarDados		#if ($t0 == $t1) -> carregarDados
 	li $t1, 10				#$t1, 10
-	beq $t0, $t1, formatarDados		#if ($t0 == $t1) -> formatarDados
+	#beq $t0, $t1, formatarDados		#if ($t0 == $t1) -> formatarDados
 	li $t1, 11				#$t1 = 11
-	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
+	#beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
 	la $a0, comandoInvalido
 	printString
@@ -581,91 +1084,6 @@ buscarApartamento:
 	
 	encerrar
 	
-
-inserirPessoaApt:
-	quebra_linha			#executa macro
-	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
-	printString			#executa macro
-	
-	readInt				#executa macro
-	add $t3, $0, $v0		#$t3 = $0 + $v0
-	
-	jal buscarApartamentoCondominio	#faz a busca
-	
-	move $a0, $t3			#$a0 = $t3
-	printInt			#executa macro
-	
-	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
-	quebra_linha			#executa macro
-	
-	bltz $t4, inserirPessoaApt	#se $t4 < 0, volta para o loop
-	
-	#Tem que verifcar quantas pessoas existem naquele apartamento
-	la $a0, apartamentos		#$a0 = apartamentos
-	addi $t4, $t4, 4		#$t4 = $t4 + 4
-	add $a0, $a0, $t4		#$a0 = $a0 + $t4
-	lw $t5, 0($a0)			#$t5 = $a0[i] (carrega em t5 o valor que está na posicao de a0)
-	
-	li $t6, 5			#$t6 = 5
-	beq $t5, $t6, apartamentoEstaCheio	#if ($t5 == $t6) -> apartamentoEstaCheio
-	
-	mul $t7, $t5, 64		#$t7 = $t5 * 64
-	addi $t7, $t7, 8		#$t7 = $t7 + 8
-	
-	#Em $t7 está o índice em memória que deve ficar (iniciar) o nome do morador a ser inserido
-	
-	#depuração
-	add $a0, $0, $t7		
-	printInt
-	#fim dep
-	
-	quebra_linha			#executa macro
-	
-	la $a0, digiteNomePessoaApt	#$a0 = digiteNomePessoaApt
-	printString			#executa macro
-	
-	li $v0, 8			#chama serviço de ler string
-	la $a0, nomePessoa		#nomePessoa = $a0
-	la $a1, 64			#$a1 = 64
-	syscall				#executa leitura
-	
-	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
-	la $t1, nomePessoa		#$t1 = nomePessoa
-	la $a0, apartamentos		#$a0 = apartamentos
-	
-	add $a0, $a0, $t0		#$a0 = $a0 + $t0
-	add $a0, $a0, $t7		#$t0 = $t0 + $t7
-	
-	loopInserirNomePessoa:
-		lb $t2, 0($t1)				#$t1[0] = $t2 
-		beq $t2, $0, fimInserirPessoaApt	#if ($t2 == 0) -> continuaInserirPessoaApt
-	
-		sb $t2, 0($a0)		#$a0[0] = $t2
-		
-		addi $t1, $t1, 1	#$t1 = $t1 + 1
-		addi $a0, $a0, 1	#$a0 = $a0 + 1
-		
-		j loopInserirNomePessoa	#volta loop
-	
-	fimInserirPessoaApt:
-		lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
-		la $a0, apartamentos		#$a0 = apartamentos
-	
-		add $a0, $a0, $t0		#$a0 = $a0 + $t0
-		addi $a0, $a0, 4		#$a0 = $a0 + 4
-	
-		lw $t1, 0($a0)			#$t1 = qtdPessoasApt
-		addi $t1, $t1, 1		#$t1 = $t1 + 1
-		sw $t1, 0($a0)			#$a0[] = $t1
-		
-		quebra_linha
-		quebra_linha
-		la $a0, pessoaAdicionadaSucesso
-		printString
-		quebra_linha
-		quebra_linha
-		
-		j main
 	
 
 removerPessoaApt:
@@ -1277,60 +1695,8 @@ veiculoNaoExisteRem:
 	j main			#volta para o main
 	
 	
+
 	
-	
-limparApto:
-
-	quebra_linha			#executa macro
-	la $a0, digiteNumApartamento	#$a0 = digiteNumApartamento
-	printString			#executa macro
-	
-	readInt				#executa macro
-	add $t3, $0, $v0		#$t3 = $0 + $v0
-	
-	jal buscarApartamentoCondominio	#faz a busca
-	
-	move $a0, $t3			#$a0 = $t3
-	printInt			#executa macro
-	quebra_linha			#executa macro
-	
-	lw $t4, indiceApartamento	#$t4 = indiceApartamento (indice memória, ex: 0, 428, 856...)
-
-	bltz $t4, limparApto	#se $t4 < 0, volta para o loop
-	
-	quebra_linha		#executa macro
-
-    	la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
-    	addi $t2, $t2, 4	    #$t3 = $t2 + 4 (endereço da quantidade de pessoas do apto)
-    	
-    	la $t3, apartamentos        # Endereço destino: apartamentos
-    	add $t3, $t3, $t4	    #$t3 = $t3 + $t4  (endereço do apto)
-    	addi $t3, $t3, 4	    #$t3 = $t3 + 4 (endereço da quantidade de pessoas do apto)
-    	
-    	li $t0, 0                   # Contador de bytes
-   	li $t1, 424                 # Total de bytes a copiar (mesmo tamanho da área)
-
-	loopLimpaApartamentos:
-	
-   	 beq $t0, $t1, fimLimparApto # Se copiamos todos os bytes, termine
-
-    	 lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
-   	 sb $t4, 0($t3)              # Salva o byte em apartamentos
-
-    	 addi $t2, $t2, 1            # Avança no endereço fonte
-   	 addi $t3, $t3, 1            # Avança no endereço destino
-   	 addi $t0, $t0, 1            # Incrementa o contador de bytes
-
-    	j loopLimpaApartamentos
-
-	fimLimparApto:
-
-    	la $a0, msgAptoLimpo
-    	printString
-    	quebra_linha
-    	quebra_linha
-
-   	 j main                      # Retorna ao menu principal
 	
 	
 
@@ -1570,263 +1936,4 @@ verificarInfoApartamentos:
 	
 voltaMain:
 	j main
-
- infoGeral:	
-
-	la $a0, apartamentos
-	addi $a0, $a0, 4                         #endereço da quantidade de pessoas do 1° apto
-	li $t0, 0
-	li $t1, 40
-	li $t2, 0				 #contador de apto vazios
-	li $t6, 0
-	li $t7, 0
 	
-    loopVerificarApartamentos:
-	
- 	beq $t0, $t1, imprimirResultadoInfoGeral
-	lw $t4, 0($a0) 
-	beqz $t4, incrementarContagemAptosVazios
-	
-	continuaLoopVerificarAptos:
-	
-	addi $t0, $t0, 1			#incrementa 1 no $t1 (iterador)
-	addi $a0, $a0, 428			#incrementa 428 no $a0
-	
-	j loopVerificarApartamentos
-	
-	   
-    incrementarContagemAptosVazios:
-	addi $t2, $t2, 1 
-	
-         j continuaLoopVerificarAptos
-	   
-
-imprimirResultadoInfoGeral: 
-   
-	 	quebra_linha
-	 	sub $t6, $t1, $t2			#AptosNaoVazios
-	 	li $t5, 100				#$t5 = 100
-	 	
-	 	mul $t7, $t6, $t5
-	 	div $t8, $t7, $t1			#PorcentagemAptosNaoVazios
-	 	sub  $t7, $t5, $t8			#porcentagemAptosVazios
-	 	
-	 	la $a0, aptosNaoVazios
-	 	printString
-	 	move $a0, $t6
-		printInt
-		la $a0, aptosVaziosOuNaoP1
-		printString
-		move $a0, $t8
-		printInt
-		la $a0, aptosVaziosOuNaoP2
-		printString
-		
-		quebra_linha
-		quebra_linha
-		
-	 	la $a0, aptosVazios
-	 	printString
-	 	move $a0, $t2
-	 	printInt
-	 	la $a0, aptosVaziosOuNaoP1
-		printString
-	 	move $a0, $t7
-	 	printInt
-	 	la $a0, aptosVaziosOuNaoP2
-		printString
-		
-		quebra_linha
-		quebra_linha
-	
-               j main
-
-salvarDados:
-
-    quebra_linha
-
-    li $v0, 13		     #comando para ler ou escrever em arquivo
-    la $a0, nomeArquivo      # Nome do arquivo
-    li $a1, 1                # Flag para escrita 
-    syscall
-    
-    move $s0, $v0            # Salva o file descriptor em $s0
-
-    li $v0, 15		     #escrever no arquivo
-    move $a0, $s0            # File descriptor
-    la $a1, apartamentos     # Endereço inicial da área de dados
-    li $a2, 17120            # Tamanho total da área de apartamentos 
-    syscall
-
-    bltz $v0, erroSalvar # Se $v0 < 0, houve um erro ao escrever
-
-    li $v0, 16		     #fechando arquivo
-    move $a0, $s0            # File descriptor
-    syscall
-
-    la $a0, msgSalvoSucesso
-    printString
-    quebra_linha
-    
-    j main                   # Retorna ao menu principal
-    
-    
-erroSalvar:
-
-    quebra_linha
-
-    li $v0, 16		     #fechando arquivo
-    move $a0, $s0            # File descriptor
-    syscall
-    
-    la $a0, msgErroSalvar
-    printString
-    quebra_linha
-    
-    j main                   # Retorna ao menu principal
-    
-
-carregarDados:
-
-    quebra_linha
-
-    li $v0, 13		     #comando para ler ou escrever em arquivo
-    la $a0, nomeArquivo      # Nome do arquivo
-    li $a1, 0                # Flag para leitura 
-    syscall
-    
-    move $s0, $v0            # Salva o file descriptor em $s0
-
-    bltz $s0, erroAbrirArquivo # Se $s0 < 0, houve um erro ao abrir (arquivo não existe)
-
-    move $a0, $s0            # File descriptor
-    li $v0, 14
-    la $a1, apartamentos     # Endereço inicial da área de destino
-    li $a2, 17120            # Tamanho esperado dos dados
-    syscall
-
-    bltz $v0, erroLerArquivo # Se $v0 < 0, houve um erro na leitura
-
-    li $v0, 16
-    move $a0, $s0            # File descriptor
-    syscall
-
-    la $a0, msgCarregadoSucesso
-    printString
-    quebra_linha
-    
-    j main                   # Retorna ao menu principal
-    
-    
-erroAbrirArquivo:
-
-    quebra_linha
- 
-    la $a0, msgArquivoNaoEncontrado
-    printString
-    quebra_linha
-    
-    j main 
-    
-
-erroLerArquivo:
-
-    quebra_linha
- 
-    li $v0, 16			#fechando arquivo
-    move $a0, $s0
-    syscall
-    
-    la $a0, msgErroCarregar	#$a0 = msgErroCarregar
-    printString			#executa macro
-    quebra_linha
-    
-    j main
-   
-  
-                                
-                                
-formatarDados:
-
-    quebra_linha
-
-    la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
-    la $t3, apartamentos        # Endereço destino: apartamentos
-    li $t0, 0                   # Contador de bytes
-    li $t1, 17120               # Total de bytes a copiar (mesmo tamanho da área)
-
-loopFormataApartamentos:
-    beq $t0, $t1, fimFormatacao # Se copiamos todos os bytes, termine
-
-    lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
-    sb $t4, 0($t3)              # Salva o byte em apartamentos
-
-    addi $t2, $t2, 1            # Avança no endereço fonte
-    addi $t3, $t3, 1            # Avança no endereço destino
-    addi $t0, $t0, 1            # Incrementa o contador de bytes
-
-    j loopFormataApartamentos
-
-fimFormatacao:
-
-    la $a0, msgDadosFormatados
-    printString
-    quebra_linha
-    quebra_linha
-
-    j main                      # Retorna ao menu principal
-
-
-stringParaInt:
-    li $v0, 0                #inicializa o resultado em 0
-
-loopStringInt:
-    lb $t0, 0($a0)           #$t0 = $a0[i]
-    beqz $t0, fimStringInt   #se for fim da string, encerra
-
-    #Verifica se é um dígito
-    li $t1, 48		# '0'
-    li $t2, 57		# '9'
-    blt $t0, $t1, fimStringInt  #Se < '0', termina
-    bgt $t0, $t2, fimStringInt  #Se > '9', termina
-
-    # Converte ASCII -> inteiro
-    sub $t0, $t0, $t1        #$t0 = char - '0'
-
-    #numero = numero * 10 + digito
-    mul $v0, $v0, 10
-    add $v0, $v0, $t0
-
-    addi $a0, $a0, 1         #Avança para próximo caractere
-    j loopStringInt
-
-fimStringInt:
-    jr $ra                   #Retorna
-
-
-main1:
-	#rascunho
-	la $a0, apartamentos
-	li $t1, 'D'
-	li $t2, 'a'
-	sb $t1, 0($a0)
-	sb $t2, 1($a0)
-	
-	
-	lb $t3, 0($a0)
-	move $a0, $t3
-	printChar
-
-	j main
-	encerrar
-	
-
-erroArgumentoFaltando:
-	la $a0, argumentoFaltando
-	printString
-	j programaPrincipal
-
-encerrarPrograma:
-	la $a0, encerrandoPr		#$a0 = encerrandoPr
-	printString			#executa macro
-	encerrar			#executa macro
