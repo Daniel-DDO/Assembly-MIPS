@@ -9,6 +9,7 @@
 
 
 .data
+	apartamentosOrigem: .space 17120
 	apartamentos: .space 17120
 	nomePessoa: .space 64
 	inteiroVeiculo: .word 0
@@ -27,32 +28,52 @@
 	aptNumEncontrado2: .asciiz " encontrado."
 	aptNumNaoEncontrado: .asciiz "Apartamento não encontrado. "
 	aptCheio: .asciiz "O apartamento está cheio. Não é possível adicionar um novo morador."
+	aptosNaoVazios: .asciiz "Não vazios:   "
+	aptosVazios: .asciiz "Vazios:       "
+	aptosVaziosOuNaoP1: .asciiz " ("
+	aptosVaziosOuNaoP2: .asciiz "%)"
 	
 	#Pessoas
 	pessoaNaoExiste: .asciiz "A pessoa não foi encontrada para ser removida nesse apartamento."
 	pessoaExiste: .asciiz "Pessoa encontrada e removida com sucesso."
 	indicePessoa: .word 0
+	pessoaAdicionadaSucesso: .asciiz "Pessoa adicionada com sucesso!"
+	
+
+	#Veículos
+	veiculoNaoExiste: .asciiz "Veiculo não encontrado."
+	veiculoRemovido: .asciiz "Veiculo encontrado e removido com sucesso!"
+	msgNaoExisteMoradores: .asciiz "Não é possível adicionar veículos, pois não há moradores"
+	aptoNaoPodeTerVeiculo: .asciiz "Falha: AP com numero max de automóveis"
+	digiteTipoVeiculo: .asciiz "Digite (m) para moto ou (c) para carro: "
+	tipoVeiculoInvalido: .asciiz "Tipo de veículo inválido"
+	digiteModeloVeiculo: .asciiz "Digite o modelo do veículo: "
+	digiteCorVeiculo: .asciiz "Digite a cor do veículo: "
 
 	#Carro
 	digiteModeloCarro: .asciiz "Digite o modelo do carro (até 32 caracteres): "
 	digiteCorCarro: .asciiz "Digite a cor do carro (até 16 caracteres): "
 	carroAdicionadoSucesso: .asciiz "Carro adicionado com sucesso!"
-	aptoNaoPodeTerVeiculo: .asciiz "Falha: AP com numero max de automóveis"
-	digiteTipoVeiculo: .asciiz "Digite (m) para moto ou (c) para carro: "
-	tipoVeiculoInvalido: .asciiz "Tipo de veículo inválido"
 	aptoNaoPodeTerCarro: .asciiz "Esse apartamento não pode ter carro"
 
-	#Moto/Veiculo
+	#Moto
 	digiteModeloMoto: .asciiz "Digite o modelo da moto (até 32 caracteres): "
 	digiteCorMoto: .asciiz "Digite a cor da moto (até 16 caracteres): "
 	motoAdicionadaSucesso: .asciiz "Moto adicionada com sucesso!"
-	digiteModeloVeiculo: .asciiz "Digite o modelo do veiculo (até 32 caracteres): "
-	digiteCorVeiculo: .asciiz "Digite a cor do veiculo (até 16 caracteres): "
-	veiculoNaoExiste: .asciiz "Veiculo não encontrado."
-	veiculoRemovido: .asciiz "Veiculo encontrado e removido com sucesso!"
+
+	# Arquivo para salvar e recarregar
+   	 nomeArquivo: .asciiz "dados_condominio.bin"
+
+   	# Mensagens para arquivo
+    	msgSalvoSucesso: .asciiz "Dados salvos com sucesso!\n"
+    	msgErroSalvar: .asciiz "Erro ao salvar dados.\n"
+    	msgCarregadoSucesso: .asciiz "Dados recarregados com sucesso!\n"
+    	msgErroCarregar: .asciiz "Erro ao carregar dados. Arquivo pode nao existir ou estar corrompido.\n"
+    	msgArquivoNaoEncontrado: .asciiz "Arquivo de dados não encontrado. Não há o que recarregar\n"
+    	msgDadosFormatados: .asciiz "Todos os apartamentos foram formatados!"
 	
 	#Textos
-	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n10. Encerrar\n"
+	escolherOpcao: .asciiz "1. Ver todas as informações\n2. Buscar apartamento\n3. Inserir pessoa\n4. Adicionar automóvel\n5. Remover pessoa\n6. Remover veiculo\n7. Info_geral\n8. Salvar\n9. Recarregar\n10. Formatar\n11. Encerrar\n"
 	encerrandoPr: .asciiz "\nEncerrando...\n"
 
 	#Informações dos apartamentos
@@ -185,12 +206,36 @@ inicializarQtdPessoasApt:
 	loopInicializarQtdPessoasApt:
 		sw $t2, 4($a0)		#$a0[4] = $t2
 		
-	beq $t0, $t1, programaPrincipal	#if ($t0 == $t1) -> main
+	beq $t0, $t1, copiarParaApartamentosOrigem #if ($t0 == $t1) -> main
 		
 		addi $t0, $t0, 1	#$t0 = $t0 + 1
 		addi $a0, $a0, 428	#$a0 = $a0 + 428
 		
 	j loopInicializarQtdPessoasApt	#volta loop
+
+
+copiarParaApartamentosOrigem:
+
+    	la $t2, apartamentos        # Endereço fonte: apartamentos
+        la $t3, apartamentosOrigem  # Endereço destino: apartamentosOrigem
+    	li $t0, 0                   # Contador de bytes
+   	li $t1, 17120               # Total de bytes a copiar
+
+loopCopiaInicial:
+   	 beq $t0, $t1, inicializacaoCompleta # Se copiamos todos os bytes, encerra
+
+   	 lb $t4, 0($t2)              # Carrega um byte de apartamentos
+    	sb $t4, 0($t3)              # Salva o byte em apartamentosOrigem
+
+    	addi $t2, $t2, 1            # Avança no endereço fonte
+    	addi $t3, $t3, 1            # Avança no endereço destino
+    	addi $t0, $t0, 1            # Incrementa o contador de bytes
+
+   	 j loopCopiaInicial
+
+inicializacaoCompleta:
+
+   	 j main
 	
 	
 somaApt:
@@ -405,13 +450,13 @@ infoApartamento:
 	quebra_linha			#executa macro
 	j programaPrincipal
 
-infoGeral:
+#infoGeral:
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
 	j programaPrincipal
 
-salvarDados:
+#salvarDados:
 	la $a0, option2			#$a0 = option2
 	printString			#executa macro
 	quebra_linha			#executa macro
@@ -438,7 +483,7 @@ main:
 	move $t0, $v0			#$t0 = $v0
 	
 	li $t1, 1				#$t1 = 1
-	beq $t0, $t1, infoCadastradaApartamento	#if ($t0 == $t1) -> visualizarInformacoes
+	beq $t0, $t1, visualizarInformacoes	#if ($t0 == $t1) -> visualizarInformacoes
 	li $t1, 2				#$t1 = 2
 	beq $t0, $t1, buscarApartamento		#if ($t0 == $t1) -> buscarApartamento
 	li $t1, 3				#$t1 = 3
@@ -448,8 +493,16 @@ main:
 	li $t1, 5				#$t1 = 5
 	beq $t0, $t1, removerPessoaApt		#if ($t0 == $t1) -> removerPessoaApt
 	li $t1, 6				#$t1 = 6
-	beq $t0, $t1, removerVeiculoApt		#if ($t0 == $t1) -> removerVeiculoApt
-	li $t1, 10				#$t1 = 9
+	beq $t0, $t1, removerVeiculoApt		#if ($t0 == $t1) -> removerAutomovel
+	li $t1, 7				#$t1 = 7
+	beq $t0, $t1, infoGeral			#if ($t0 == $t1) -> info_geral
+	li $t1, 8				#$t1, 8
+	beq $t0, $t1, salvarDados		#if ($t0 == $t1) -> salvarDados
+	li $t1, 9				#$t1, 9
+	beq $t0, $t1, carregarDados		#if ($t0 == $t1) -> carregarDados
+	li $t1, 10				#$t1, 10
+	beq $t0, $t1, formatarDados		#if ($t0 == $t1) -> formatarDados
+	li $t1, 11				#$t1 = 11
 	beq $t0, $t1, encerrarPrograma		#if ($t0 == $t1) -> encerrarPrograma
 	
 	
@@ -581,7 +634,7 @@ inserirPessoaApt:
 	
 	loopInserirNomePessoa:
 		lb $t2, 0($t1)				#$t1[0] = $t2 
-		beq $t2, $0, continuaInserirPessoaApt	#if ($t2 == 0) -> continuaInserirPessoaApt
+		beq $t2, $0, fimInserirPessoaApt	#if ($t2 == 0) -> continuaInserirPessoaApt
 	
 		sb $t2, 0($a0)		#$a0[0] = $t2
 		
@@ -590,19 +643,26 @@ inserirPessoaApt:
 		
 		j loopInserirNomePessoa	#volta loop
 	
-	continuaInserirPessoaApt:
-	lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
-	la $a0, apartamentos		#$a0 = apartamentos
+	fimInserirPessoaApt:
+		lw $t0, indiceApartamento	#$t0 = indiceApartamento (valor em memória, exemplo: apt 1 começa no 428)
+		la $a0, apartamentos		#$a0 = apartamentos
 	
-	add $a0, $a0, $t0		#$a0 = $a0 + $t0
-	addi $a0, $a0, 4		#$a0 = $a0 + 4
+		add $a0, $a0, $t0		#$a0 = $a0 + $t0
+		addi $a0, $a0, 4		#$a0 = $a0 + 4
 	
-	lw $t1, 0($a0)			#$t1 = qtdPessoasApt
-	addi $t1, $t1, 1		#$t1 = $t1 + 1
-	sw $t1, 0($a0)			#$a0[] = $t1
+		lw $t1, 0($a0)			#$t1 = qtdPessoasApt
+		addi $t1, $t1, 1		#$t1 = $t1 + 1
+		sw $t1, 0($a0)			#$a0[] = $t1
+		
+		quebra_linha
+		quebra_linha
+		la $a0, pessoaAdicionadaSucesso
+		printString
+		quebra_linha
+		quebra_linha
+		
+		j main
 	
-	j main
-
 
 removerPessoaApt:
 	quebra_linha			#executa macro
@@ -781,6 +841,13 @@ adicionarAutomovel:
 	bltz $t4, adicionarAutomovel	#se $t4 < 0, volta para o loop
 	
 	la $a0, apartamentos		#$a0 = apartamentos
+	add $a0, $a0, $t4
+	
+	lw $t8, 4($a0)			#$t8 = quantidadePessoasApto
+	
+	beqz $t8, semMoradoresSemVeiculos	#se $t8 = 0
+	
+	la $a0, apartamentos		#$a0 = apartamentos
 	addi $t4, $t4, 328		#$t4 = $t4 + 328
 	add $a0, $a0, $t4		#$a0 = $a0 + $t4
 	lw $t5, 0($a0)			#$t5 = $a0[i] (carrega em t5 o valor que está na posicao de a0)
@@ -818,7 +885,16 @@ adicionarAutomovel:
 	printString			#executa macro
 	
 	  j loopInserirTipoVeiculo		#redireciona para adicionarAutomovel
+
+
+semMoradoresSemVeiculos:
 	
+	quebra_linha
+	la $a0, msgNaoExisteMoradores
+	printString
+	quebra_linha
+	
+	j main
 	
 inserirCarro:
 	quebra_linha			#executa macro
@@ -1256,8 +1332,6 @@ buscarApartamentoCondominio:
 		jr $ra
 		#j inserirPessoaApt			#volta para inserirPessoaApt no começo
 	
-
-carregarApt:
 	
 infoCadastradaApartamento:
 	quebra_linha			#executa macro
@@ -1435,6 +1509,211 @@ verificarInfoApartamentos:
 voltaMain:
 	j main
 
+ infoGeral:	
+
+	la $a0, apartamentos
+	addi $a0, $a0, 4                         #endereço da quantidade de pessoas do 1° apto
+	li $t0, 0
+	li $t1, 40
+	li $t2, 0				 #contador de apto vazios
+	li $t6, 0
+	li $t7, 0
+	
+    loopVerificarApartamentos:
+	
+ 	beq $t0, $t1, imprimirResultadoInfoGeral
+	lw $t4, 0($a0) 
+	beqz $t4, incrementarContagemAptosVazios
+	
+	continuaLoopVerificarAptos:
+	
+	addi $t0, $t0, 1			#incrementa 1 no $t1 (iterador)
+	addi $a0, $a0, 428			#incrementa 428 no $a0
+	
+	j loopVerificarApartamentos
+	
+	   
+    incrementarContagemAptosVazios:
+	addi $t2, $t2, 1 
+	
+         j continuaLoopVerificarAptos
+	   
+
+imprimirResultadoInfoGeral: 
+   
+	 	quebra_linha
+	 	sub $t6, $t1, $t2			#AptosNaoVazios
+	 	li $t5, 100				#$t5 = 100
+	 	
+	 	mul $t7, $t6, $t5
+	 	div $t8, $t7, $t1			#PorcentagemAptosNaoVazios
+	 	sub  $t7, $t5, $t8			#porcentagemAptosVazios
+	 	
+	 	la $a0, aptosNaoVazios
+	 	printString
+	 	move $a0, $t6
+		printInt
+		la $a0, aptosVaziosOuNaoP1
+		printString
+		move $a0, $t8
+		printInt
+		la $a0, aptosVaziosOuNaoP2
+		printString
+		
+		quebra_linha
+		quebra_linha
+		
+	 	la $a0, aptosVazios
+	 	printString
+	 	move $a0, $t2
+	 	printInt
+	 	la $a0, aptosVaziosOuNaoP1
+		printString
+	 	move $a0, $t7
+	 	printInt
+	 	la $a0, aptosVaziosOuNaoP2
+		printString
+		
+		quebra_linha
+		quebra_linha
+	
+               j main
+
+salvarDados:
+
+    quebra_linha
+
+    li $v0, 13		     #comando para ler ou escrever em arquivo
+    la $a0, nomeArquivo      # Nome do arquivo
+    li $a1, 1                # Flag para escrita 
+    syscall
+    
+    move $s0, $v0            # Salva o file descriptor em $s0
+
+    li $v0, 15		     #escrever no arquivo
+    move $a0, $s0            # File descriptor
+    la $a1, apartamentos     # Endereço inicial da área de dados
+    li $a2, 17120            # Tamanho total da área de apartamentos 
+    syscall
+
+    bltz $v0, erroSalvar # Se $v0 < 0, houve um erro ao escrever
+
+    li $v0, 16		     #fechando arquivo
+    move $a0, $s0            # File descriptor
+    syscall
+
+    la $a0, msgSalvoSucesso
+    printString
+    quebra_linha
+    
+    j main                   # Retorna ao menu principal
+    
+    
+erroSalvar:
+
+    quebra_linha
+
+    li $v0, 16		     #fechando arquivo
+    move $a0, $s0            # File descriptor
+    syscall
+    
+    la $a0, msgErroSalvar
+    printString
+    quebra_linha
+    
+    j main                   # Retorna ao menu principal
+    
+
+carregarDados:
+
+    quebra_linha
+
+    li $v0, 13		     #comando para ler ou escrever em arquivo
+    la $a0, nomeArquivo      # Nome do arquivo
+    li $a1, 0                # Flag para leitura 
+    syscall
+    
+    move $s0, $v0            # Salva o file descriptor em $s0
+
+    bltz $s0, erroAbrirArquivo # Se $s0 < 0, houve um erro ao abrir (arquivo não existe)
+
+    move $a0, $s0            # File descriptor
+    li $v0, 14
+    la $a1, apartamentos     # Endereço inicial da área de destino
+    li $a2, 17120            # Tamanho esperado dos dados
+    syscall
+
+    bltz $v0, erroLerArquivo # Se $v0 < 0, houve um erro na leitura
+
+    li $v0, 16
+    move $a0, $s0            # File descriptor
+    syscall
+
+    la $a0, msgCarregadoSucesso
+    printString
+    quebra_linha
+    
+    j main                   # Retorna ao menu principal
+    
+    
+erroAbrirArquivo:
+
+    quebra_linha
+ 
+    la $a0, msgArquivoNaoEncontrado
+    printString
+    quebra_linha
+    
+    j main 
+    
+
+erroLerArquivo:
+
+    quebra_linha
+ 
+    li $v0, 16			#fechando arquivo
+    move $a0, $s0
+    syscall
+    
+    la $a0, msgErroCarregar	#$a0 = msgErroCarregar
+    printString			#executa macro
+    quebra_linha
+    
+    j main
+   
+  
+                                
+                                
+formatarDados:
+
+    quebra_linha
+
+    la $t2, apartamentosOrigem  # Endereço fonte: apartamentosOrigem
+    la $t3, apartamentos        # Endereço destino: apartamentos
+    li $t0, 0                   # Contador de bytes
+    li $t1, 17120               # Total de bytes a copiar (mesmo tamanho da área)
+
+loopFormataApartamentos:
+    beq $t0, $t1, fimFormatacao # Se copiamos todos os bytes, termine
+
+    lb $t4, 0($t2)              # Carrega um byte de apartamentosOrigem
+    sb $t4, 0($t3)              # Salva o byte em apartamentos
+
+    addi $t2, $t2, 1            # Avança no endereço fonte
+    addi $t3, $t3, 1            # Avança no endereço destino
+    addi $t0, $t0, 1            # Incrementa o contador de bytes
+
+    j loopFormataApartamentos
+
+fimFormatacao:
+
+    la $a0, msgDadosFormatados
+    printString
+    quebra_linha
+    quebra_linha
+
+    j main                      # Retorna ao menu principal
+
 
 stringParaInt:
     li $v0, 0                #inicializa o resultado em 0
@@ -1489,5 +1768,3 @@ encerrarPrograma:
 	la $a0, encerrandoPr		#$a0 = encerrandoPr
 	printString			#executa macro
 	encerrar			#executa macro
-
-	
